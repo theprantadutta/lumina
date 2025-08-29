@@ -5,6 +5,7 @@ import 'package:lumina/features/auth/presentation/screens/signup_screen.dart';
 import 'package:lumina/features/auth/presentation/screens/onboarding_screen.dart';
 import 'package:lumina/features/mood/presentation/screens/mood_entry_screen.dart';
 import 'package:lumina/features/mood/presentation/screens/mood_history_screen.dart';
+import 'package:lumina/features/analytics/presentation/screens/analytics_dashboard_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -17,6 +18,7 @@ class AppRouter {
   static const String moodEntry = '/mood-entry';
   static const String moodHistory = '/mood-history';
   static const String journal = '/journal';
+  static const String analytics = '/analytics';
   static const String profile = '/profile';
   static const String settings = '/settings';
 
@@ -68,6 +70,11 @@ class AppRouter {
             path: journal,
             name: 'journal',
             builder: (context, state) => const JournalScreen(),
+          ),
+          GoRoute(
+            path: analytics,
+            name: 'analytics',
+            builder: (context, state) => const AnalyticsDashboardScreen(),
           ),
           GoRoute(
             path: profile,
@@ -200,6 +207,11 @@ class _MainShellState extends State<MainShell> {
       label: 'Journal',
     ),
     const BottomNavigationBarItem(
+      icon: Icon(Icons.analytics_outlined),
+      activeIcon: Icon(Icons.analytics),
+      label: 'Analytics',
+    ),
+    const BottomNavigationBarItem(
       icon: Icon(Icons.person_outline),
       activeIcon: Icon(Icons.person),
       label: 'Profile',
@@ -210,6 +222,7 @@ class _MainShellState extends State<MainShell> {
     AppRouter.dashboard,
     AppRouter.moodEntry,
     AppRouter.journal,
+    AppRouter.analytics,
     AppRouter.profile,
   ];
 
