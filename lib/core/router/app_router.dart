@@ -4,6 +4,7 @@ import 'package:lumina/features/mood/presentation/screens/beautiful_mood_entry_s
 import 'package:lumina/features/mood/presentation/screens/mood_history_screen.dart';
 import 'package:lumina/features/analytics/presentation/screens/beautiful_analytics_screen.dart';
 import 'package:lumina/shared/widgets/beautiful_bottom_nav.dart';
+import 'package:lumina/core/router/custom_transitions.dart';
 
 class AppRouter {
   AppRouter._();
@@ -32,37 +33,44 @@ class AppRouter {
           GoRoute(
             path: dashboard,
             name: 'dashboard',
-            builder: (context, state) => const DashboardScreen(),
+            pageBuilder: (context, state) => 
+                state.getTransitionPage(const DashboardScreen()),
           ),
           GoRoute(
             path: moodEntry,
             name: 'mood-entry',
-            builder: (context, state) => const BeautifulMoodEntryScreen(),
+            pageBuilder: (context, state) => 
+                state.getTransitionPage(const BeautifulMoodEntryScreen()),
           ),
           GoRoute(
             path: moodHistory,
             name: 'mood-history',
-            builder: (context, state) => const MoodHistoryScreen(),
+            pageBuilder: (context, state) => 
+                state.getTransitionPage(const MoodHistoryScreen()),
           ),
           GoRoute(
             path: journal,
             name: 'journal',
-            builder: (context, state) => const JournalScreen(),
+            pageBuilder: (context, state) => 
+                state.getTransitionPage(const JournalScreen()),
           ),
           GoRoute(
             path: analytics,
             name: 'analytics',
-            builder: (context, state) => const BeautifulAnalyticsScreen(),
+            pageBuilder: (context, state) => 
+                state.getTransitionPage(const BeautifulAnalyticsScreen()),
           ),
           GoRoute(
             path: profile,
             name: 'profile',
-            builder: (context, state) => const ProfileScreen(),
+            pageBuilder: (context, state) => 
+                state.getTransitionPage(const ProfileScreen()),
           ),
           GoRoute(
             path: settings,
             name: 'settings',
-            builder: (context, state) => const SettingsScreen(),
+            pageBuilder: (context, state) => 
+                state.getTransitionPage(const SettingsScreen()),
           ),
         ],
       ),

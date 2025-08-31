@@ -50,7 +50,7 @@ dependencies:
   go_router: ^16.2.1
   
   # Storage
-  shared_preferences: ^2.2.2
+  shared_preferences: ^2.5.3
   
   # UI & Animations
   rive: ^0.13.1
@@ -70,6 +70,8 @@ dependencies:
   share_plus: ^11.1.0
   path_provider: ^2.1.5
   firebase_messaging: ^16.0.0
+  hive_flutter: ^1.1.0
+  connectivity_plus: ^6.1.5
 
 dev_dependencies:
   flutter_test:

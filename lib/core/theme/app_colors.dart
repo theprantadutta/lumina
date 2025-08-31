@@ -21,6 +21,11 @@ class AppColors {
   static const neutralDark = Color(0xFF374151);
   static const neutralDarker = Color(0xFF1F2937);
 
+  // Text colors
+  static const textDark = Color(0xFF1F2937);
+  static const textLight = Color(0xFFFFFFFF);
+  static const textMedium = Color(0xFF6B7280);
+
   // Surface colors
   static const surfaceLight = Color(0xFFFFFFFF);
   static const surfaceDark = Color(0xFF1A1A1A);
