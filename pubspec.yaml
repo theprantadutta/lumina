@@ -69,6 +69,7 @@ dependencies:
   widgets_to_image: ^2.0.1
   share_plus: ^11.1.0
   path_provider: ^2.1.5
+  firebase_messaging: ^16.0.0
 
 dev_dependencies:
   flutter_test:
