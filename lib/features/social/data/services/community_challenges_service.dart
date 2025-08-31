@@ -87,8 +87,8 @@ class CommunityChallengesService {
 
     return query.snapshots().map((snapshot) {
       List<CommunityChallenge> challenges = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return CommunityChallenge.fromJson(data);
+        final data = doc.data();
+        return CommunityChallenge.fromJson(data as Map<String, dynamic>);
       }).toList();
 
       // Filter by tags if specified
@@ -271,8 +271,9 @@ class CommunityChallengesService {
 
     final participants = <ChallengeParticipantInfo>[];
     for (final doc in participationSnapshot.docs) {
+      final data = doc.data();
       final participation = ChallengeParticipation.fromJson(
-        doc.data() as Map<String, dynamic>,
+        data as Map<String, dynamic>,
       );
 
       // Get user profile

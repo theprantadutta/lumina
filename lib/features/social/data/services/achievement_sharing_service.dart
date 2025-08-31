@@ -61,8 +61,8 @@ class AchievementSharingService {
 
     return query.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return SharedAchievement.fromJson(data);
+        final data = doc.data();
+        return SharedAchievement.fromJson(data as Map<String, dynamic>);
       }).toList();
     });
   }
