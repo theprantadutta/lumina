@@ -3,7 +3,10 @@
     "allow": [
       "Bash(flutter pub:*)",
       "Bash(flutter analyze:*)",
-      "Bash(flutter packages pub run:*)"
+      "Bash(flutter packages pub run:*)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(dart run build_runner:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
