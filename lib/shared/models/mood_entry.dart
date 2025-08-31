@@ -1,25 +1,37 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:lumina/core/theme/app_colors.dart';
 
-part 'mood_entry.freezed.dart';
 part 'mood_entry.g.dart';
 
-@freezed
-class MoodEntry with _$MoodEntry {
-  const factory MoodEntry({
-    required String id,
-    required String userId,
-    required MoodType mood,
-    required int intensity, // 1-10 scale
-    String? note,
-    @Default([]) List<String> factors,
-    required DateTime timestamp,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) = _MoodEntry;
+@JsonSerializable()
+class MoodEntry {
+  final String id;
+  final String userId;
+  final MoodType mood;
+  final int intensity;
+  final String? note;
+  final List<String> factors;
+  final DateTime timestamp;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
-  factory MoodEntry.fromJson(Map<String, dynamic> json) => _$MoodEntryFromJson(json);
+  const MoodEntry({
+    required this.id,
+    required this.userId,
+    required this.mood,
+    required this.intensity,
+    this.note,
+    this.factors = const [],
+    required this.timestamp,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory MoodEntry.fromJson(Map<String, dynamic> json) =>
+      _$MoodEntryFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MoodEntryToJson(this);
 }
 
 enum MoodType {
@@ -95,6 +107,29 @@ enum MoodType {
     }
   }
 
+  IconData get icon {
+    switch (this) {
+      case MoodType.ecstatic:
+        return Icons.sentiment_very_satisfied_rounded;
+      case MoodType.happy:
+        return Icons.sentiment_satisfied_alt_rounded;
+      case MoodType.content:
+        return Icons.sentiment_satisfied_rounded;
+      case MoodType.neutral:
+        return Icons.sentiment_neutral_rounded;
+      case MoodType.sad:
+        return Icons.sentiment_dissatisfied_rounded;
+      case MoodType.anxious:
+        return Icons.sentiment_very_dissatisfied_rounded;
+      case MoodType.angry:
+        return Icons.mood_bad_rounded;
+      case MoodType.depressed:
+        return Icons.sentiment_very_dissatisfied_rounded;
+    }
+  }
+
+  String get label => displayName;
+
   int get baseIntensity {
     switch (this) {
       case MoodType.ecstatic:
@@ -117,21 +152,28 @@ enum MoodType {
   }
 }
 
-@freezed
-class MoodFactor with _$MoodFactor {
-  const MoodFactor._();
-  
-  const factory MoodFactor({
-    required String id,
-    required String name,
-    required String category,
-    required int iconCodePoint,
-    @Default(true) bool isPositive,
-  }) = _MoodFactor;
+@JsonSerializable()
+class MoodFactor {
+  final String id;
+  final String name;
+  final String category;
+  final int iconCodePoint;
+  final bool isPositive;
+
+  const MoodFactor({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.iconCodePoint,
+    this.isPositive = true,
+  });
 
   IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
 
-  factory MoodFactor.fromJson(Map<String, dynamic> json) => _$MoodFactorFromJson(json);
+  factory MoodFactor.fromJson(Map<String, dynamic> json) =>
+      _$MoodFactorFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MoodFactorToJson(this);
 }
 
 class MoodFactors {
@@ -165,7 +207,7 @@ class MoodFactors {
       iconCodePoint: 0xe561, // local_dining
       isPositive: true,
     ),
-    
+
     // Social
     MoodFactor(
       id: 'friends',
@@ -188,7 +230,7 @@ class MoodFactors {
       iconCodePoint: 0xe32c, // phone_android
       isPositive: false,
     ),
-    
+
     // Work & Productivity
     MoodFactor(
       id: 'work_stress',
@@ -204,7 +246,7 @@ class MoodFactors {
       iconCodePoint: 0xe2e0, // check_circle
       isPositive: true,
     ),
-    
+
     // Personal
     MoodFactor(
       id: 'meditation',
@@ -227,7 +269,7 @@ class MoodFactors {
       iconCodePoint: 0xe41f, // nature
       isPositive: true,
     ),
-    
+
     // Weather & Environment
     MoodFactor(
       id: 'sunny_weather',

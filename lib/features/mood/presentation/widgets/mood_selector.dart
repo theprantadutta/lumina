@@ -39,21 +39,13 @@ class _MoodSelectorState extends State<MoodSelector>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _selectionController,
-      curve: Curves.elasticOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _selectionController, curve: Curves.elasticOut),
+    );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
     _pulseController.repeat(reverse: true);
   }
@@ -127,12 +119,12 @@ class _MoodSelectorState extends State<MoodSelector>
 
   void _handleMoodTap(MoodType mood) {
     if (!widget.isEnabled) return;
-    
+
     HapticFeedback.lightImpact();
     _selectionController.forward().then((_) {
       _selectionController.reverse();
     });
-    
+
     widget.onMoodSelected(mood);
   }
 }
@@ -170,10 +162,7 @@ class _AnimatedMoodBubbleState extends State<AnimatedMoodBubble>
     _glowAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _colorAnimation = ColorTween(
       begin: widget.mood.color.withValues(alpha: 0.6),
@@ -223,7 +212,9 @@ class _AnimatedMoodBubbleState extends State<AnimatedMoodBubble>
           ),
           child: GlassMorphismCard(
             borderRadius: 40,
-            color: _colorAnimation.value ?? widget.mood.color.withValues(alpha: 0.6),
+            color:
+                _colorAnimation.value ??
+                widget.mood.color.withValues(alpha: 0.6),
             opacity: widget.isSelected ? 0.3 : 0.1,
             blur: widget.isSelected ? 20 : 10,
             child: Container(
@@ -245,7 +236,9 @@ class _AnimatedMoodBubbleState extends State<AnimatedMoodBubble>
                     widget.mood.displayName,
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight: widget.isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: widget.isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
@@ -292,10 +285,7 @@ class _IntensitySliderState extends State<IntensitySlider>
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(_controller);
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(_controller);
   }
 
   @override
@@ -328,7 +318,10 @@ class _IntensitySliderState extends State<IntensitySlider>
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         gradient: AppGradients.primary,
                         borderRadius: BorderRadius.circular(20),
@@ -347,11 +340,17 @@ class _IntensitySliderState extends State<IntensitySlider>
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     activeTrackColor: widget.selectedMood?.color,
-                    inactiveTrackColor: widget.selectedMood?.color.withValues(alpha: 0.3),
+                    inactiveTrackColor: widget.selectedMood?.color.withValues(
+                      alpha: 0.3,
+                    ),
                     thumbColor: widget.selectedMood?.color,
-                    overlayColor: widget.selectedMood?.color.withValues(alpha: 0.1),
+                    overlayColor: widget.selectedMood?.color.withValues(
+                      alpha: 0.1,
+                    ),
                     trackHeight: 6.0,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 12,
+                    ),
                   ),
                   child: Slider(
                     value: widget.value.toDouble(),
@@ -362,7 +361,9 @@ class _IntensitySliderState extends State<IntensitySlider>
                         ? (value) {
                             HapticFeedback.selectionClick();
                             widget.onChanged(value.round());
-                            _controller.forward().then((_) => _controller.reverse());
+                            _controller.forward().then(
+                              (_) => _controller.reverse(),
+                            );
                           }
                         : null,
                   ),

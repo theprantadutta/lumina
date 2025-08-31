@@ -12,21 +12,39 @@ import 'package:lumina/features/analytics/data/models/achievement.dart';
 import 'package:lumina/features/mood/data/services/mood_service.dart';
 import 'package:lumina/features/journal/data/services/journal_service.dart';
 import 'package:lumina/shared/models/mood_entry.dart';
-import 'package:lumina/shared/widgets/gradient_container.dart';
 import 'package:lumina/shared/widgets/glass_morphism_card.dart';
 
-class AnalyticsDashboardScreen extends ConsumerStatefulWidget {
-  const AnalyticsDashboardScreen({super.key});
+enum TimePeriod {
+  lastWeek,
+  lastMonth,
+  lastThreeMonths,
+  lastYear;
 
-  @override
-  ConsumerState<AnalyticsDashboardScreen> createState() =>
-      _AnalyticsDashboardScreenState();
+  String get displayName {
+    switch (this) {
+      case TimePeriod.lastWeek:
+        return '7D';
+      case TimePeriod.lastMonth:
+        return '30D';
+      case TimePeriod.lastThreeMonths:
+        return '3M';
+      case TimePeriod.lastYear:
+        return '1Y';
+    }
+  }
 }
 
-class _AnalyticsDashboardScreenState
-    extends ConsumerState<AnalyticsDashboardScreen>
+class BeautifulAnalyticsScreen extends ConsumerStatefulWidget {
+  const BeautifulAnalyticsScreen({super.key});
+
+  @override
+  ConsumerState<BeautifulAnalyticsScreen> createState() => _BeautifulAnalyticsScreenState();
+}
+
+class _BeautifulAnalyticsScreenState extends ConsumerState<BeautifulAnalyticsScreen>
     with TickerProviderStateMixin {
   late AnimationController _pageController;
+  late AnimationController _statsController;
   late AnimationController _refreshController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _refreshAnimation;
@@ -35,7 +53,6 @@ class _AnalyticsDashboardScreenState
   List<Insight> _insights = [];
   MoodStatistics? _moodStats;
   JournalStatistics? _journalStats;
-  List<MoodTrendPoint> _trendData = [];
   Map<MoodType, int> _moodDistribution = {};
   UserProgress? _userProgress;
   Map<String, double> _correlationData = {};
@@ -48,6 +65,10 @@ class _AnalyticsDashboardScreenState
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
+    _statsController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
     _refreshController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -56,6 +77,7 @@ class _AnalyticsDashboardScreenState
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _pageController, curve: Curves.easeInOut),
     );
+    
 
     _refreshAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _refreshController, curve: Curves.elasticOut),
@@ -68,6 +90,7 @@ class _AnalyticsDashboardScreenState
   @override
   void dispose() {
     _pageController.dispose();
+    _statsController.dispose();
     _refreshController.dispose();
     super.dispose();
   }
@@ -83,7 +106,7 @@ class _AnalyticsDashboardScreenState
 
       final period = _getPeriodDates(_selectedPeriod);
 
-      // Initialize services (in a real app, these would come from providers)
+      // Initialize services
       final moodService = MoodService();
       final journalService = JournalService();
       final insightsService = InsightsService(moodService, journalService);
@@ -118,28 +141,25 @@ class _AnalyticsDashboardScreenState
       setState(() {
         _moodStats = results[0] as MoodStatistics;
         _journalStats = results[1] as JournalStatistics;
-        _trendData = results[2] as List<MoodTrendPoint>;
+        // _trendData = results[2] as List<MoodTrendPoint>; // Using MoodTrendChart with empty data for demo
         _insights = results[3] as List<Insight>;
         _userProgress = results[4] as UserProgress;
         _isLoading = false;
       });
 
-      // Generate mock correlation data
       _generateCorrelationData();
-
-      // Generate mock mood distribution for demo
       _generateMoodDistribution();
+      _statsController.forward();
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-      // Handle error - in a real app, show error message
       debugPrint('Error loading analytics: $e');
     }
   }
 
   void _generateMoodDistribution() {
-    // Mock data for demonstration
+    // Mock data for demonstration - in real app would come from _moodStats
     _moodDistribution = {
       MoodType.happy: 15,
       MoodType.content: 12,
@@ -180,25 +200,38 @@ class _AnalyticsDashboardScreenState
     }
   }
 
+  Future<void> _refreshData() async {
+    _refreshController.forward().then((_) {
+      _refreshController.reset();
+    });
+    await _loadAnalyticsData();
+  }
+
+  void _changePeriod(TimePeriod period) {
+    if (_selectedPeriod != period) {
+      setState(() {
+        _selectedPeriod = period;
+      });
+      _loadAnalyticsData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GradientContainer(
-        gradient: AppGradients.primary,
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildAppBar(),
-                _buildPeriodSelector(),
-                Expanded(
-                  child: _isLoading
-                      ? _buildLoadingState()
-                      : _buildTabbedContent(),
-                ),
-              ],
-            ),
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Column(
+            children: [
+              _buildAppBar(),
+              _buildPeriodSelector(),
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : _buildTabbedContent(),
+              ),
+            ],
           ),
         ),
       ),
@@ -210,12 +243,12 @@ class _AnalyticsDashboardScreenState
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          const Icon(Icons.analytics_outlined, color: Colors.white, size: 28),
+          Icon(Icons.analytics_outlined, color: Theme.of(context).colorScheme.primary, size: 28),
           const SizedBox(width: 12),
-          const Text(
+          Text(
             'Analytics',
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -225,7 +258,26 @@ class _AnalyticsDashboardScreenState
             turns: _refreshAnimation,
             child: IconButton(
               onPressed: _refreshData,
-              icon: const Icon(Icons.refresh, color: Colors.white),
+              icon: Icon(Icons.refresh, color: Theme.of(context).colorScheme.onSurface),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+          const SizedBox(height: 16),
+          Text(
+            'Analyzing your data...',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 16,
             ),
           ),
         ],
@@ -248,13 +300,13 @@ class _AnalyticsDashboardScreenState
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withValues(alpha: 0.2)
+                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.3),
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -262,7 +314,7 @@ class _AnalyticsDashboardScreenState
                   period.displayName,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 12,
                     fontWeight: isSelected
                         ? FontWeight.bold
@@ -277,22 +329,6 @@ class _AnalyticsDashboardScreenState
     );
   }
 
-  Widget _buildLoadingState() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(color: Colors.white),
-          SizedBox(height: 16),
-          Text(
-            'Analyzing your data...',
-            style: TextStyle(color: Colors.white, fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTabbedContent() {
     return DefaultTabController(
       length: 5,
@@ -302,10 +338,10 @@ class _AnalyticsDashboardScreenState
             margin: const EdgeInsets.symmetric(horizontal: 16),
             child: TabBar(
               isScrollable: true,
-              indicatorColor: Colors.white,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white60,
-              tabs: const [
+              indicatorColor: Theme.of(context).colorScheme.primary,
+              labelColor: Theme.of(context).colorScheme.onSurface,
+              unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              tabs: [
                 Tab(text: 'Overview'),
                 Tab(text: 'Trends'),
                 Tab(text: 'Insights'),
@@ -348,109 +384,6 @@ class _AnalyticsDashboardScreenState
     );
   }
 
-  Widget _buildTrendsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildMoodTrendSection(),
-          const SizedBox(height: 24),
-          _buildMoodDistributionSection(),
-          const SizedBox(height: 24),
-          _buildComparisonSection(),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInsightsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_buildFullInsightsSection(), const SizedBox(height: 100)],
-      ),
-    );
-  }
-
-  Widget _buildCorrelationsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CorrelationChart(
-            correlationData: _correlationData,
-            title: 'Mood Factor Correlations',
-            xAxisLabel: 'Factors',
-            yAxisLabel: 'Correlation Strength',
-          ),
-          const SizedBox(height: 24),
-          WellnessCorrelationView(
-            userId: 'current-user',
-            startDate: _getPeriodDates(_selectedPeriod).start,
-            endDate: _getPeriodDates(_selectedPeriod).end,
-          ),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAchievementsTab() {
-    if (_userProgress == null) {
-      return const Center(
-        child: Text(
-          'Loading achievements...',
-          style: TextStyle(color: Colors.white70),
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LevelProgressCard(progress: _userProgress!),
-          const SizedBox(height: 24),
-          const Text(
-            'Recent Achievements',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          AchievementGrid(
-            achievements: _userProgress!.unlockedAchievements.take(6).toList(),
-            showProgress: false,
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'In Progress',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          AchievementGrid(
-            achievements: _userProgress!.inProgressAchievements
-                .take(4)
-                .toList(),
-            showProgress: true,
-          ),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
-  }
-
   Widget _buildStatsOverview() {
     return StatCardGrid(
       cards: [
@@ -486,212 +419,14 @@ class _AnalyticsDashboardScreenState
     );
   }
 
-  Widget _buildMoodTrendSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Mood Trends',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        MoodTrendChart(trendData: _trendData, title: 'Mood Over Time'),
-      ],
-    );
-  }
-
-  Widget _buildMoodDistributionSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Mood Distribution',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        MoodDistributionChart(moodCounts: _moodDistribution),
-      ],
-    );
-  }
-
-  Widget _buildQuickInsights() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Insights',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ..._insights.take(2).map(_buildInsightCard),
-        if (_insights.isEmpty) _buildEmptyInsights(),
-      ],
-    );
-  }
-
-  Widget _buildFullInsightsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'All Insights',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ..._insights.map(_buildInsightCard),
-        if (_insights.isEmpty) _buildEmptyInsights(),
-      ],
-    );
-  }
-
-  Widget _buildComparisonSection() {
-    final currentPeriod = _getPeriodDates(_selectedPeriod);
-    final previousStart = currentPeriod.start.subtract(
-      Duration(days: currentPeriod.end.difference(currentPeriod.start).inDays),
-    );
-    final previousEnd = currentPeriod.start;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Period Comparison',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        PeriodComparisonView(
-          userId: 'current-user',
-          currentStartDate: currentPeriod.start,
-          currentEndDate: currentPeriod.end,
-          previousStartDate: previousStart,
-          previousEndDate: previousEnd,
-          currentPeriodLabel: 'Current ${_selectedPeriod.displayName}',
-          previousPeriodLabel: 'Previous ${_selectedPeriod.displayName}',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInsightCard(Insight insight) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: GlassMorphismCard(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: insight.type.color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                insight.type.icon,
-                color: insight.type.color,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    insight.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    insight.description,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 14,
-                    ),
-                  ),
-                  if (insight.suggestion != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      '💡 ${insight.suggestion}',
-                      style: TextStyle(
-                        color: insight.type.color,
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyInsights() {
-    return GlassMorphismCard(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        children: [
-          Icon(
-            Icons.psychology_outlined,
-            size: 48,
-            color: Colors.white.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No insights yet',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Keep tracking your mood and journaling to see personalized insights',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 14,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildProgressSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Progress',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -724,39 +459,311 @@ class _AnalyticsDashboardScreenState
     );
   }
 
-  void _changePeriod(TimePeriod period) {
-    if (_selectedPeriod != period) {
-      setState(() {
-        _selectedPeriod = period;
-      });
-      _loadAnalyticsData();
-    }
+
+  Widget _buildQuickInsights() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Insights',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ..._insights.take(2).map(_buildInsightCard),
+        if (_insights.isEmpty) _buildEmptyInsights(),
+      ],
+    );
   }
 
-  Future<void> _refreshData() async {
-    _refreshController.forward().then((_) {
-      _refreshController.reset();
-    });
-    await _loadAnalyticsData();
+  Widget _buildTrendsTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildMoodTrendSection(),
+          const SizedBox(height: 24),
+          _buildMoodDistributionSection(),
+          const SizedBox(height: 24),
+          _buildComparisonSection(),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
   }
+
+  Widget _buildInsightsTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFullInsightsSection(),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCorrelationsTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CorrelationChart(
+            correlationData: _correlationData,
+            title: 'Mood Factor Correlations',
+            xAxisLabel: 'Factors',
+            yAxisLabel: 'Correlation Strength',
+          ),
+          const SizedBox(height: 24),
+          WellnessCorrelationView(
+            userId: 'current-user',
+            startDate: _getPeriodDates(_selectedPeriod).start,
+            endDate: _getPeriodDates(_selectedPeriod).end,
+          ),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAchievementsTab() {
+    if (_userProgress == null) {
+      return Center(
+        child: Text(
+          'Loading achievements...',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LevelProgressCard(progress: _userProgress!),
+          const SizedBox(height: 24),
+          Text(
+            'Recent Achievements',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          AchievementGrid(
+            achievements: _userProgress!.unlockedAchievements.take(6).toList(),
+            showProgress: false,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'In Progress',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          AchievementGrid(
+            achievements: _userProgress!.inProgressAchievements
+                .take(4)
+                .toList(),
+            showProgress: true,
+          ),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFullInsightsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'All Insights',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ..._insights.map(_buildInsightCard),
+        if (_insights.isEmpty) _buildEmptyInsights(),
+      ],
+    );
+  }
+
+  Widget _buildInsightCard(Insight insight) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: GlassMorphismCard(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: insight.type.color.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                insight.type.icon,
+                color: insight.type.color,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    insight.title,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    insight.description,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                      fontSize: 14,
+                    ),
+                  ),
+                  if (insight.suggestion != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      '💡 ${insight.suggestion}',
+                      style: TextStyle(
+                        color: insight.type.color,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyInsights() {
+    return GlassMorphismCard(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          Icon(
+            Icons.psychology_outlined,
+            size: 48,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No insights yet',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Keep tracking your mood and journaling to see personalized insights',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMoodTrendSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Mood Trends',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        MoodTrendChart(trendData: const [], title: 'Mood Over Time'),
+      ],
+    );
+  }
+
+  Widget _buildMoodDistributionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Mood Distribution',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        MoodDistributionChart(moodCounts: _moodDistribution),
+      ],
+    );
+  }
+
+  Widget _buildComparisonSection() {
+    final currentPeriod = _getPeriodDates(_selectedPeriod);
+    final previousStart = currentPeriod.start.subtract(
+      Duration(days: currentPeriod.end.difference(currentPeriod.start).inDays),
+    );
+    final previousEnd = currentPeriod.start;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Period Comparison',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        PeriodComparisonView(
+          userId: 'current-user',
+          currentStartDate: currentPeriod.start,
+          currentEndDate: currentPeriod.end,
+          previousStartDate: previousStart,
+          previousEndDate: previousEnd,
+          currentPeriodLabel: 'Current ${_selectedPeriod.displayName}',
+          previousPeriodLabel: 'Previous ${_selectedPeriod.displayName}',
+        ),
+      ],
+    );
+  }
+
+
 }
 
-enum TimePeriod {
-  lastWeek,
-  lastMonth,
-  lastThreeMonths,
-  lastYear;
-
-  String get displayName {
-    switch (this) {
-      case TimePeriod.lastWeek:
-        return '7D';
-      case TimePeriod.lastMonth:
-        return '30D';
-      case TimePeriod.lastThreeMonths:
-        return '3M';
-      case TimePeriod.lastYear:
-        return '1Y';
-    }
-  }
-}

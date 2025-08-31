@@ -10,7 +10,9 @@ import 'package:lumina/shared/models/journal_entry.dart';
 // Service providers
 final moodServiceProvider = Provider<MoodService>((ref) => MoodService());
 
-final journalServiceProvider = Provider<JournalService>((ref) => JournalService());
+final journalServiceProvider = Provider<JournalService>(
+  (ref) => JournalService(),
+);
 
 final insightsServiceProvider = Provider<InsightsService>((ref) {
   final moodService = ref.watch(moodServiceProvider);
@@ -18,63 +20,88 @@ final insightsServiceProvider = Provider<InsightsService>((ref) {
   return InsightsService(moodService, journalService);
 });
 
-final achievementServiceProvider = Provider<AchievementService>((ref) => AchievementService());
+final achievementServiceProvider = Provider<AchievementService>(
+  (ref) => AchievementService(),
+);
 
 // Data providers
-final userProgressProvider = FutureProvider.family<UserProgress, String>((ref, userId) async {
+final userProgressProvider = FutureProvider.family<UserProgress, String>((
+  ref,
+  userId,
+) async {
   final achievementService = ref.watch(achievementServiceProvider);
   return await achievementService.getUserProgress(userId);
 });
 
-final moodStatisticsProvider = FutureProvider.family<MoodStatistics, AnalyticsRequest>((ref, request) async {
-  final moodService = ref.watch(moodServiceProvider);
-  return await moodService.getMoodStatistics(
-    userId: request.userId,
-    startDate: request.startDate,
-    endDate: request.endDate,
-  );
-});
+final moodStatisticsProvider =
+    FutureProvider.family<MoodStatistics, AnalyticsRequest>((
+      ref,
+      request,
+    ) async {
+      final moodService = ref.watch(moodServiceProvider);
+      return await moodService.getMoodStatistics(
+        userId: request.userId,
+        startDate: request.startDate,
+        endDate: request.endDate,
+      );
+    });
 
-final journalStatisticsProvider = FutureProvider.family<JournalStatistics, AnalyticsRequest>((ref, request) async {
-  final journalService = ref.watch(journalServiceProvider);
-  return await journalService.getJournalStatistics(
-    userId: request.userId,
-    startDate: request.startDate,
-    endDate: request.endDate,
-  );
-});
+final journalStatisticsProvider =
+    FutureProvider.family<JournalStatistics, AnalyticsRequest>((
+      ref,
+      request,
+    ) async {
+      final journalService = ref.watch(journalServiceProvider);
+      return await journalService.getJournalStatistics(
+        userId: request.userId,
+        startDate: request.startDate,
+        endDate: request.endDate,
+      );
+    });
 
-final moodTrendsProvider = FutureProvider.family<List<MoodTrendPoint>, MoodTrendRequest>((ref, request) async {
-  final moodService = ref.watch(moodServiceProvider);
-  return await moodService.getMoodTrends(
-    userId: request.userId,
-    startDate: request.startDate,
-    endDate: request.endDate,
-    period: request.period,
-  );
-});
+final moodTrendsProvider =
+    FutureProvider.family<List<MoodTrendPoint>, MoodTrendRequest>((
+      ref,
+      request,
+    ) async {
+      final moodService = ref.watch(moodServiceProvider);
+      return await moodService.getMoodTrends(
+        userId: request.userId,
+        startDate: request.startDate,
+        endDate: request.endDate,
+        period: request.period,
+      );
+    });
 
-final insightsProvider = FutureProvider.family<List<Insight>, AnalyticsRequest>((ref, request) async {
-  final insightsService = ref.watch(insightsServiceProvider);
-  return await insightsService.generateInsights(
-    userId: request.userId,
-    startDate: request.startDate,
-    endDate: request.endDate,
-  );
-});
+final insightsProvider = FutureProvider.family<List<Insight>, AnalyticsRequest>(
+  (ref, request) async {
+    final insightsService = ref.watch(insightsServiceProvider);
+    return await insightsService.generateInsights(
+      userId: request.userId,
+      startDate: request.startDate,
+      endDate: request.endDate,
+    );
+  },
+);
 
-final newAchievementsProvider = FutureProvider.family<List<Achievement>, AchievementCheckRequest>((ref, request) async {
-  final achievementService = ref.watch(achievementServiceProvider);
-  return await achievementService.checkForNewAchievements(
-    userId: request.userId,
-    recentMoodEntries: request.recentMoodEntries,
-    recentJournalEntries: request.recentJournalEntries,
-    additionalData: request.additionalData,
-  );
-});
+final newAchievementsProvider =
+    FutureProvider.family<List<Achievement>, AchievementCheckRequest>((
+      ref,
+      request,
+    ) async {
+      final achievementService = ref.watch(achievementServiceProvider);
+      return await achievementService.checkForNewAchievements(
+        userId: request.userId,
+        recentMoodEntries: request.recentMoodEntries,
+        recentJournalEntries: request.recentJournalEntries,
+        additionalData: request.additionalData,
+      );
+    });
 
 // State providers for analytics dashboard
-final selectedPeriodProvider = StateProvider<TimePeriod>((ref) => TimePeriod.lastMonth);
+final selectedPeriodProvider = StateProvider<TimePeriod>(
+  (ref) => TimePeriod.lastMonth,
+);
 
 final currentAnalyticsTabProvider = StateProvider<int>((ref) => 0);
 
@@ -83,7 +110,7 @@ final currentAnalyticsRequestProvider = Provider<AnalyticsRequest>((ref) {
   const userId = 'current-user'; // TODO: Get from auth
   final period = ref.watch(selectedPeriodProvider);
   final dates = _getPeriodDates(period);
-  
+
   return AnalyticsRequest(
     userId: userId,
     startDate: dates.start,
@@ -95,7 +122,7 @@ final currentMoodTrendRequestProvider = Provider<MoodTrendRequest>((ref) {
   const userId = 'current-user'; // TODO: Get from auth
   final period = ref.watch(selectedPeriodProvider);
   final dates = _getPeriodDates(period);
-  
+
   return MoodTrendRequest(
     userId: userId,
     startDate: dates.start,
@@ -107,7 +134,7 @@ final currentMoodTrendRequestProvider = Provider<MoodTrendRequest>((ref) {
 final dashboardDataProvider = FutureProvider<DashboardData>((ref) async {
   final analyticsRequest = ref.watch(currentAnalyticsRequestProvider);
   final trendRequest = ref.watch(currentMoodTrendRequestProvider);
-  
+
   // Load all data concurrently
   final results = await Future.wait([
     ref.watch(moodStatisticsProvider(analyticsRequest).future),
@@ -127,15 +154,17 @@ final dashboardDataProvider = FutureProvider<DashboardData>((ref) async {
 });
 
 // Watch providers for real-time updates
-final moodEntriesStreamProvider = StreamProvider.family<List<MoodEntry>, String>((ref, userId) {
-  final moodService = ref.watch(moodServiceProvider);
-  return moodService.getMoodEntriesStream(userId: userId);
-});
+final moodEntriesStreamProvider =
+    StreamProvider.family<List<MoodEntry>, String>((ref, userId) {
+      final moodService = ref.watch(moodServiceProvider);
+      return moodService.getMoodEntriesStream(userId: userId);
+    });
 
-final journalEntriesStreamProvider = StreamProvider.family<List<JournalEntry>, String>((ref, userId) {
-  final journalService = ref.watch(journalServiceProvider);
-  return journalService.getJournalEntriesStream(userId: userId);
-});
+final journalEntriesStreamProvider =
+    StreamProvider.family<List<JournalEntry>, String>((ref, userId) {
+      final journalService = ref.watch(journalServiceProvider);
+      return journalService.getJournalEntriesStream(userId: userId);
+    });
 
 // Helper function to get period dates
 ({DateTime start, DateTime end}) _getPeriodDates(TimePeriod period) {

@@ -1,43 +1,70 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-part 'journal_entry.freezed.dart';
 part 'journal_entry.g.dart';
 
-@freezed
-class JournalEntry with _$JournalEntry {
-  const factory JournalEntry({
-    required String id,
-    required String userId,
-    required String title,
-    required String content,
-    @Default([]) List<String> tags,
-    @Default([]) List<String> imageUrls,
-    String? audioUrl,
-    @Default([]) List<Gratitude> gratitudeList,
-    required DateTime timestamp,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    @Default(false) bool isFavorite,
-    @Default(JournalMood.neutral) JournalMood mood,
-    String? weather,
-    String? location,
-    @Default(JournalTemplate.freeform) JournalTemplate template,
-  }) = _JournalEntry;
+@JsonSerializable()
+class JournalEntry {
+  final String id;
+  final String userId;
+  final String title;
+  final String content;
+  final List<String> tags;
+  final List<String> imageUrls;
+  final String? audioUrl;
+  final List<Gratitude> gratitudeList;
+  final DateTime timestamp;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final bool isFavorite;
+  final JournalMood mood;
+  final String? weather;
+  final String? location;
+  final JournalTemplate template;
 
-  factory JournalEntry.fromJson(Map<String, dynamic> json) => _$JournalEntryFromJson(json);
+  const JournalEntry({
+    required this.id,
+    required this.userId,
+    required this.title,
+    required this.content,
+    this.tags = const [],
+    this.imageUrls = const [],
+    this.audioUrl,
+    this.gratitudeList = const [],
+    required this.timestamp,
+    this.createdAt,
+    this.updatedAt,
+    this.isFavorite = false,
+    this.mood = JournalMood.neutral,
+    this.weather,
+    this.location,
+    this.template = JournalTemplate.freeform,
+  });
+
+  factory JournalEntry.fromJson(Map<String, dynamic> json) =>
+      _$JournalEntryFromJson(json);
+
+  Map<String, dynamic> toJson() => _$JournalEntryToJson(this);
 }
 
-@freezed
-class Gratitude with _$Gratitude {
-  const factory Gratitude({
-    required String id,
-    required String text,
-    required GratitudeCategory category,
-    DateTime? createdAt,
-  }) = _Gratitude;
+@JsonSerializable()
+class Gratitude {
+  final String id;
+  final String text;
+  final GratitudeCategory category;
+  final DateTime? createdAt;
 
-  factory Gratitude.fromJson(Map<String, dynamic> json) => _$GratitudeFromJson(json);
+  const Gratitude({
+    required this.id,
+    required this.text,
+    required this.category,
+    this.createdAt,
+  });
+
+  factory Gratitude.fromJson(Map<String, dynamic> json) =>
+      _$GratitudeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$GratitudeToJson(this);
 }
 
 enum JournalMood {
@@ -364,7 +391,7 @@ class JournalPrompts {
 
   static String getRandomPrompt(JournalTemplate template) {
     final random = DateTime.now().millisecondsSinceEpoch % 100;
-    
+
     switch (template) {
       case JournalTemplate.gratitude:
         return gratitudePrompts[random % gratitudePrompts.length];

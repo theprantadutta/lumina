@@ -1,32 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-part 'achievement.freezed.dart';
 part 'achievement.g.dart';
 
-@freezed
-class Achievement with _$Achievement {
-  const factory Achievement({
-    required String id,
-    required String title,
-    required String description,
-    required AchievementType type,
-    required AchievementCategory category,
-    required int targetValue,
-    @Default(0) int currentProgress,
-    @Default(false) bool isUnlocked,
-    @Default(false) bool isNotified,
-    DateTime? unlockedAt,
-    DateTime? createdAt,
-    @Default(1) int tier, // 1-5 difficulty/importance
-    @JsonKey(includeFromJson: false, includeToJson: false) IconData? customIcon,
-    @Default(0) int iconCodePoint,
-    @Default('MaterialIcons') String iconFontFamily,
-    String? reward,
-  }) = _Achievement;
+@JsonSerializable()
+class Achievement {
+  final String id;
+  final String title;
+  final String description;
+  final AchievementType type;
+  final AchievementCategory category;
+  final int targetValue;
+  final int currentProgress;
+  final bool isUnlocked;
+  final bool isNotified;
+  final DateTime? unlockedAt;
+  final DateTime? createdAt;
+  final int tier;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final IconData? customIcon;
+  final int iconCodePoint;
+  final String iconFontFamily;
+  final String? reward;
+
+  const Achievement({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.type,
+    required this.category,
+    required this.targetValue,
+    this.currentProgress = 0,
+    this.isUnlocked = false,
+    this.isNotified = false,
+    this.unlockedAt,
+    this.createdAt,
+    this.tier = 1,
+    this.customIcon,
+    this.iconCodePoint = 0,
+    this.iconFontFamily = 'MaterialIcons',
+    this.reward,
+  });
 
   factory Achievement.fromJson(Map<String, dynamic> json) =>
       _$AchievementFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AchievementToJson(this);
 }
 
 enum AchievementType {
@@ -122,22 +141,34 @@ enum AchievementCategory {
   }
 }
 
-@freezed
-class UserProgress with _$UserProgress {
-  const factory UserProgress({
-    required String userId,
-    @Default([]) List<Achievement> unlockedAchievements,
-    @Default([]) List<Achievement> inProgressAchievements,
-    @Default(0) int totalPoints,
-    @Default(1) int currentLevel,
-    @Default(0) int currentLevelProgress,
-    @Default(100) int nextLevelRequirement,
-    @Default({}) Map<AchievementCategory, int> categoryProgress,
-    DateTime? lastUpdated,
-  }) = _UserProgress;
+@JsonSerializable()
+class UserProgress {
+  final String userId;
+  final List<Achievement> unlockedAchievements;
+  final List<Achievement> inProgressAchievements;
+  final int totalPoints;
+  final int currentLevel;
+  final int currentLevelProgress;
+  final int nextLevelRequirement;
+  final Map<AchievementCategory, int> categoryProgress;
+  final DateTime? lastUpdated;
+
+  const UserProgress({
+    required this.userId,
+    this.unlockedAchievements = const [],
+    this.inProgressAchievements = const [],
+    this.totalPoints = 0,
+    this.currentLevel = 1,
+    this.currentLevelProgress = 0,
+    this.nextLevelRequirement = 100,
+    this.categoryProgress = const {},
+    this.lastUpdated,
+  });
 
   factory UserProgress.fromJson(Map<String, dynamic> json) =>
       _$UserProgressFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserProgressToJson(this);
 }
 
 class AchievementDefinitions {

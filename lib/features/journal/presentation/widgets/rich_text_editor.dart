@@ -31,7 +31,7 @@ class _RichTextEditorState extends State<RichTextEditor> {
   void initState() {
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
-    
+
     // Initialize controller with content
     Document doc;
     if (widget.initialContent != null && widget.initialContent!.isNotEmpty) {
@@ -39,7 +39,7 @@ class _RichTextEditorState extends State<RichTextEditor> {
     } else {
       doc = Document();
     }
-    
+
     _controller = QuillController(
       document: doc,
       selection: const TextSelection.collapsed(offset: 0),
@@ -47,7 +47,7 @@ class _RichTextEditorState extends State<RichTextEditor> {
 
     // Listen to text changes
     _controller.addListener(_onTextChanged);
-    
+
     // Listen to focus changes
     _focusNode.addListener(_onFocusChanged);
   }
@@ -85,10 +85,12 @@ class _RichTextEditorState extends State<RichTextEditor> {
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
             opacity: _isToolbarVisible ? 1.0 : 0.0,
-            child: _isToolbarVisible ? _buildToolbar() : const SizedBox.shrink(),
+            child: _isToolbarVisible
+                ? _buildToolbar()
+                : const SizedBox.shrink(),
           ),
         ),
-        
+
         // Editor
         Expanded(
           child: GlassMorphismCard(
@@ -107,9 +109,7 @@ class _RichTextEditorState extends State<RichTextEditor> {
     return GlassMorphismCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: QuillSimpleToolbar(
-        controller: _controller,
-      ),
+      child: QuillSimpleToolbar(controller: _controller),
     );
   }
 }
@@ -168,11 +168,7 @@ class _SimpleTextEditorState extends State<SimpleTextEditor> {
       child: TextField(
         controller: _controller,
         focusNode: _focusNode,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          height: 1.5,
-        ),
+        style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.5),
         maxLines: null,
         expands: true,
         textAlignVertical: TextAlignVertical.top,

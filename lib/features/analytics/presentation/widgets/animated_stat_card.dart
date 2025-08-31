@@ -39,42 +39,33 @@ class _AnimatedStatCardState extends State<AnimatedStatCard>
   @override
   void initState() {
     super.initState();
-    
+
     _slideController = AnimationController(
       duration: widget.animationDuration,
       vsync: this,
     );
-    
+
     _counterController = AnimationController(
-      duration: Duration(milliseconds: widget.animationDuration.inMilliseconds + 300),
+      duration: Duration(
+        milliseconds: widget.animationDuration.inMilliseconds + 300,
+      ),
       vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.elasticOut,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
+        );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
+    );
 
     // Parse numeric value for counter animation
     final numericValue = _parseNumericValue(widget.value);
-    _counterAnimation = IntTween(
-      begin: 0,
-      end: numericValue,
-    ).animate(CurvedAnimation(
-      parent: _counterController,
-      curve: Curves.easeOut,
-    ));
+    _counterAnimation = IntTween(begin: 0, end: numericValue).animate(
+      CurvedAnimation(parent: _counterController, curve: Curves.easeOut),
+    );
 
     // Start animations with a slight delay
     Future.delayed(Duration(milliseconds: (widget.hashCode % 500)), () {
@@ -120,66 +111,73 @@ class _AnimatedStatCardState extends State<AnimatedStatCard>
         child: GestureDetector(
           onTap: widget.onTap,
           child: GlassMorphismCard(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         gradient: widget.gradient ?? AppGradients.primary,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(
-                        widget.icon,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+                      child: Icon(widget.icon, color: Colors.white, size: 20),
                     ),
                     const Spacer(),
                     if (widget.onTap != null)
                       Icon(
                         Icons.arrow_forward_ios,
                         color: Colors.white.withValues(alpha: 0.5),
-                        size: 16,
+                        size: 14,
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  widget.title,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                const SizedBox(height: 10),
+                Flexible(
+                  child: Text(
+                    widget.title,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(height: 8),
-                AnimatedBuilder(
-                  animation: _counterAnimation,
-                  builder: (context, child) {
-                    return Text(
-                      _parseNumericValue(widget.value) > 0
-                          ? _formatCounterValue(_counterAnimation.value)
-                          : widget.value,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
-                  },
+                const SizedBox(height: 6),
+                Flexible(
+                  child: AnimatedBuilder(
+                    animation: _counterAnimation,
+                    builder: (context, child) {
+                      return Text(
+                        _parseNumericValue(widget.value) > 0
+                            ? _formatCounterValue(_counterAnimation.value)
+                            : widget.value,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    },
+                  ),
                 ),
                 if (widget.subtitle != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.subtitle!,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 12,
+                  const SizedBox(height: 4),
+                  Flexible(
+                    child: Text(
+                      widget.subtitle!,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -213,7 +211,7 @@ class StatCardGrid extends StatelessWidget {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: spacing,
         mainAxisSpacing: spacing,
-        childAspectRatio: 1.1,
+        childAspectRatio: 0.9,
       ),
       itemCount: cards.length,
       itemBuilder: (context, index) => cards[index],
@@ -257,21 +255,17 @@ class _ProgressStatCardState extends State<ProgressStatCard>
       vsync: this,
     );
 
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: widget.progress,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOutCubic,
-    ));
+    _progressAnimation = Tween<double>(begin: 0.0, end: widget.progress)
+        .animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOutCubic,
+          ),
+        );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
 
     Future.delayed(Duration(milliseconds: (widget.hashCode % 300)), () {
       if (mounted) {
@@ -289,7 +283,7 @@ class _ProgressStatCardState extends State<ProgressStatCard>
   @override
   Widget build(BuildContext context) {
     final color = widget.color ?? AppGradients.primary.colors.first;
-    
+
     return ScaleTransition(
       scale: _scaleAnimation,
       child: GlassMorphismCard(
@@ -309,11 +303,7 @@ class _ProgressStatCardState extends State<ProgressStatCard>
                       width: 1,
                     ),
                   ),
-                  child: Icon(
-                    widget.icon,
-                    color: color,
-                    size: 20,
-                  ),
+                  child: Icon(widget.icon, color: color, size: 20),
                 ),
                 const Spacer(),
                 AnimatedBuilder(
@@ -366,10 +356,7 @@ class _ProgressStatCardState extends State<ProgressStatCard>
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [
-                              color,
-                              color.withValues(alpha: 0.7),
-                            ],
+                            colors: [color, color.withValues(alpha: 0.7)],
                           ),
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -410,10 +397,14 @@ class TrendIndicator extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.2),
+            color: (isPositive ? Colors.green : Colors.red).withValues(
+              alpha: 0.2,
+            ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.3),
+              color: (isPositive ? Colors.green : Colors.red).withValues(
+                alpha: 0.3,
+              ),
               width: 1,
             ),
           ),

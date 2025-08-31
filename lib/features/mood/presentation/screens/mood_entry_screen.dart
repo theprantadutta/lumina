@@ -23,13 +23,13 @@ class _MoodEntryScreenState extends ConsumerState<MoodEntryScreen>
   late AnimationController _fabController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   MoodType? selectedMood;
   int intensity = 5;
   String note = '';
   List<String> selectedFactors = [];
   bool isLoading = false;
-  
+
   final PageController _stepController = PageController();
   final TextEditingController _noteController = TextEditingController();
   int currentStep = 0;
@@ -46,21 +46,14 @@ class _MoodEntryScreenState extends ConsumerState<MoodEntryScreen>
       vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _pageController,
-      curve: Curves.elasticOut,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(parent: _pageController, curve: Curves.elasticOut),
+        );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _pageController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pageController, curve: Curves.easeInOut),
+    );
 
     _pageController.forward();
     _fabController.forward();
@@ -180,11 +173,7 @@ class _MoodEntryScreenState extends ConsumerState<MoodEntryScreen>
     return PageView(
       controller: _stepController,
       physics: const NeverScrollableScrollPhysics(),
-      children: [
-        _buildMoodStep(),
-        _buildFactorsStep(),
-        _buildNoteStep(),
-      ],
+      children: [_buildMoodStep(), _buildFactorsStep(), _buildNoteStep()],
     );
   }
 
@@ -262,24 +251,24 @@ class _MoodEntryScreenState extends ConsumerState<MoodEntryScreen>
             },
             child: GlassMorphismCard(
               borderRadius: 20,
-              color: isSelected 
-                  ? (factor.isPositive ? Colors.green : Colors.red).withValues(alpha: 0.3)
+              color: isSelected
+                  ? (factor.isPositive ? Colors.green : Colors.red).withValues(
+                      alpha: 0.3,
+                    )
                   : Colors.white.withValues(alpha: 0.1),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    factor.icon,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  Icon(factor.icon, color: Colors.white, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     factor.name,
                     style: TextStyle(
                       color: Colors.white,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                   if (isSelected) ...[

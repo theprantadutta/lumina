@@ -43,7 +43,7 @@ class MoodService {
       }
 
       final QuerySnapshot querySnapshot = await query.get();
-      
+
       return querySnapshot.docs
           .map((doc) => MoodEntry.fromJson(doc.data() as Map<String, dynamic>))
           .toList();
@@ -87,10 +87,18 @@ class MoodService {
   // Update mood entry
   Future<void> updateMoodEntry(MoodEntry moodEntry) async {
     try {
-      final updatedEntry = moodEntry.copyWith(
+      final updatedEntry = MoodEntry(
+        id: moodEntry.id,
+        userId: moodEntry.userId,
+        mood: moodEntry.mood,
+        intensity: moodEntry.intensity,
+        note: moodEntry.note,
+        factors: moodEntry.factors,
+        timestamp: moodEntry.timestamp,
+        createdAt: moodEntry.createdAt,
         updatedAt: DateTime.now(),
       );
-      
+
       await _firestore
           .collection(_collection)
           .doc(moodEntry.id)
@@ -171,7 +179,7 @@ class MoodService {
       for (final entry in entries) {
         moodCounts[entry.mood] = (moodCounts[entry.mood] ?? 0) + 1;
       }
-      
+
       final mostCommonMood = moodCounts.entries
           .reduce((a, b) => a.value > b.value ? a : b)
           .key;
@@ -229,16 +237,17 @@ class MoodService {
       return groupedEntries.entries.map((entry) {
         final date = entry.key;
         final entries = entry.value;
-        
-        final averageIntensity = entries.fold<double>(
-          0.0,
-          (total, e) => total + e.intensity,
-        ) / entries.length;
 
-        final averageMood = entries.fold<double>(
-          0.0,
-          (total, e) => total + e.mood.baseIntensity,
-        ) / entries.length;
+        final averageIntensity =
+            entries.fold<double>(0.0, (total, e) => total + e.intensity) /
+            entries.length;
+
+        final averageMood =
+            entries.fold<double>(
+              0.0,
+              (total, e) => total + e.mood.baseIntensity,
+            ) /
+            entries.length;
 
         return MoodTrendPoint(
           date: date,
@@ -246,8 +255,7 @@ class MoodService {
           averageMood: averageMood,
           entryCount: entries.length,
         );
-      }).toList()
-        ..sort((a, b) => a.date.compareTo(b.date));
+      }).toList()..sort((a, b) => a.date.compareTo(b.date));
     } catch (e) {
       throw Exception('Failed to get mood trends: $e');
     }
@@ -282,8 +290,4 @@ class MoodTrendPoint {
   });
 }
 
-enum TrendPeriod {
-  daily,
-  weekly,
-  monthly,
-}
+enum TrendPeriod { daily, weekly, monthly }

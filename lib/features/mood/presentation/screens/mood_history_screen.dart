@@ -17,7 +17,7 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   DateTime selectedDate = DateTime.now();
   DateTime currentMonth = DateTime.now();
 
@@ -28,13 +28,9 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
     _animationController.forward();
   }
 
@@ -47,7 +43,9 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
   @override
   Widget build(BuildContext context) {
     final moodEntriesAsync = ref.watch(moodEntriesProvider);
-    final selectedDateEntries = ref.watch(moodEntriesForDateProvider(selectedDate));
+    final selectedDateEntries = ref.watch(
+      moodEntriesForDateProvider(selectedDate),
+    );
 
     return Scaffold(
       body: GradientContainer(
@@ -60,7 +58,8 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
                 _buildAppBar(),
                 Expanded(
                   child: moodEntriesAsync.when(
-                    data: (allEntries) => _buildContent(allEntries, selectedDateEntries),
+                    data: (allEntries) =>
+                        _buildContent(allEntries, selectedDateEntries),
                     loading: () => const Center(
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
@@ -102,14 +101,15 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
     );
   }
 
-  Widget _buildContent(List<MoodEntry> allEntries, AsyncValue<List<MoodEntry>> selectedDateEntries) {
+  Widget _buildContent(
+    List<MoodEntry> allEntries,
+    AsyncValue<List<MoodEntry>> selectedDateEntries,
+  ) {
     return Column(
       children: [
         _buildCalendar(allEntries),
         const SizedBox(height: 16),
-        Expanded(
-          child: _buildSelectedDateContent(selectedDateEntries),
-        ),
+        Expanded(child: _buildSelectedDateContent(selectedDateEntries)),
       ],
     );
   }
@@ -153,7 +153,11 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
   }
 
   Widget _buildCalendarGrid(List<MoodEntry> allEntries) {
-    final daysInMonth = DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
+    final daysInMonth = DateTime(
+      currentMonth.year,
+      currentMonth.month + 1,
+      0,
+    ).day;
     final firstDayOfMonth = DateTime(currentMonth.year, currentMonth.month, 1);
     final startingWeekday = firstDayOfMonth.weekday;
 
@@ -173,18 +177,20 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
         // Weekday headers
         Row(
           children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-              .map((day) => Expanded(
-                    child: Center(
-                      child: Text(
-                        day,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
+              .map(
+                (day) => Expanded(
+                  child: Center(
+                    child: Text(
+                      day,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ))
+                  ),
+                ),
+              )
               .toList(),
         ),
         const SizedBox(height: 8),
@@ -192,16 +198,21 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
         ...List.generate(6, (weekIndex) {
           return Row(
             children: List.generate(7, (dayIndex) {
-              final dayNumber = (weekIndex * 7 + dayIndex) - startingWeekday + 2;
+              final dayNumber =
+                  (weekIndex * 7 + dayIndex) - startingWeekday + 2;
               if (dayNumber < 1 || dayNumber > daysInMonth) {
                 return const Expanded(child: SizedBox(height: 40));
               }
-              
-              final date = DateTime(currentMonth.year, currentMonth.month, dayNumber);
+
+              final date = DateTime(
+                currentMonth.year,
+                currentMonth.month,
+                dayNumber,
+              );
               final entriesForDate = entriesByDate[date] ?? [];
               final isSelected = _isSameDay(date, selectedDate);
               final isToday = _isSameDay(date, DateTime.now());
-              
+
               return Expanded(
                 child: GestureDetector(
                   onTap: () => _selectDate(date),
@@ -253,37 +264,38 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
 
   Widget _buildMoodIndicator(List<MoodEntry> entries) {
     if (entries.isEmpty) return const SizedBox.shrink();
-    
+
     // Calculate average mood color
     final colors = entries.map((e) => e.mood.color).toList();
-    
+
     if (entries.length == 1) {
       return Container(
         width: 6,
         height: 6,
-        decoration: BoxDecoration(
-          color: colors.first,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: colors.first, shape: BoxShape.circle),
       );
     }
-    
+
     // For multiple entries, show a row of small dots
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: colors.take(3).map((color) => Container(
-        width: 4,
-        height: 4,
-        margin: const EdgeInsets.symmetric(horizontal: 1),
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-        ),
-      )).toList(),
+      children: colors
+          .take(3)
+          .map(
+            (color) => Container(
+              width: 4,
+              height: 4,
+              margin: const EdgeInsets.symmetric(horizontal: 1),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+          )
+          .toList(),
     );
   }
 
-  Widget _buildSelectedDateContent(AsyncValue<List<MoodEntry>> selectedDateEntries) {
+  Widget _buildSelectedDateContent(
+    AsyncValue<List<MoodEntry>> selectedDateEntries,
+  ) {
     return selectedDateEntries.when(
       data: (entries) {
         if (entries.isEmpty) {
@@ -291,9 +303,8 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
         }
         return _buildEntriesList(entries);
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: Colors.white),
-      ),
+      loading: () =>
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
       error: (error, stack) => _buildErrorState(error.toString()),
     );
   }
@@ -313,16 +324,14 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
           const SizedBox(height: 16),
           Text(
             'No mood entries',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Colors.white,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 8),
           Text(
             'No moods recorded for ${_getDateString(selectedDate)}',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -356,10 +365,7 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
                 decoration: BoxDecoration(
                   color: entry.mood.color.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: entry.mood.color,
-                    width: 2,
-                  ),
+                  border: Border.all(color: entry.mood.color, width: 2),
                 ),
                 child: Center(
                   child: Text(
@@ -403,10 +409,7 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
             const SizedBox(height: 12),
             Text(
               entry.note!,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           ],
           if (entry.factors.isNotEmpty) ...[
@@ -419,9 +422,12 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
                     .where((f) => f.id == factorId)
                     .firstOrNull;
                 if (factor == null) return const SizedBox.shrink();
-                
+
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: (factor.isPositive ? Colors.green : Colors.orange)
                         .withValues(alpha: 0.2),
@@ -434,11 +440,7 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        factor.icon,
-                        size: 12,
-                        color: Colors.white,
-                      ),
+                      Icon(factor.icon, size: 12, color: Colors.white),
                       const SizedBox(width: 4),
                       Text(
                         factor.name,
@@ -465,24 +467,18 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red,
-          ),
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
           Text(
             'Error loading mood history',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Colors.white,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 8),
           Text(
             error,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -524,22 +520,44 @@ class _MoodHistoryScreenState extends ConsumerState<MoodHistoryScreen>
 
   String _getMonthYearString(DateTime date) {
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
 
   String _getDateString(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   String _getTimeString(DateTime date) {
-    final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+    final hour = date.hour > 12
+        ? date.hour - 12
+        : (date.hour == 0 ? 12 : date.hour);
     final minute = date.minute.toString().padLeft(2, '0');
     final period = date.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';

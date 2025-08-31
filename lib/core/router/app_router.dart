@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lumina/features/auth/presentation/screens/login_screen.dart';
-import 'package:lumina/features/auth/presentation/screens/signup_screen.dart';
-import 'package:lumina/features/auth/presentation/screens/onboarding_screen.dart';
-import 'package:lumina/features/mood/presentation/screens/mood_entry_screen.dart';
+import 'package:lumina/features/mood/presentation/screens/beautiful_mood_entry_screen.dart';
 import 'package:lumina/features/mood/presentation/screens/mood_history_screen.dart';
-import 'package:lumina/features/analytics/presentation/screens/analytics_dashboard_screen.dart';
+import 'package:lumina/features/analytics/presentation/screens/beautiful_analytics_screen.dart';
+import 'package:lumina/shared/widgets/beautiful_bottom_nav.dart';
 
 class AppRouter {
   AppRouter._();
@@ -23,29 +21,9 @@ class AppRouter {
   static const String settings = '/settings';
 
   static final GoRouter router = GoRouter(
-    initialLocation: splash,
+    initialLocation: dashboard,
     debugLogDiagnostics: true,
     routes: [
-      GoRoute(
-        path: splash,
-        name: 'splash',
-        builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: onboarding,
-        name: 'onboarding',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
-      GoRoute(
-        path: login,
-        name: 'login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: signup,
-        name: 'signup',
-        builder: (context, state) => const SignupScreen(),
-      ),
       ShellRoute(
         builder: (context, state, child) {
           return MainShell(child: child);
@@ -59,7 +37,7 @@ class AppRouter {
           GoRoute(
             path: moodEntry,
             name: 'mood-entry',
-            builder: (context, state) => const MoodEntryScreen(),
+            builder: (context, state) => const BeautifulMoodEntryScreen(),
           ),
           GoRoute(
             path: moodHistory,
@@ -74,7 +52,7 @@ class AppRouter {
           GoRoute(
             path: analytics,
             name: 'analytics',
-            builder: (context, state) => const AnalyticsDashboardScreen(),
+            builder: (context, state) => const BeautifulAnalyticsScreen(),
           ),
           GoRoute(
             path: profile,
@@ -118,7 +96,7 @@ class AppRouter {
   );
 }
 
-// Temporary placeholder screens - these will be replaced with actual implementations
+// Splash screen that shows while determining app state
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
@@ -133,17 +111,17 @@ class SplashScreen extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Center(
+        child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.psychology_alt_rounded,
                 size: 120,
                 color: Colors.white,
               ),
-              const SizedBox(height: 24),
-              const Text(
+              SizedBox(height: 24),
+              Text(
                 'Lumina',
                 style: TextStyle(
                   fontSize: 48,
@@ -152,23 +130,14 @@ class SplashScreen extends StatelessWidget {
                   letterSpacing: 2,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8),
+              Text(
                 'Track your wellness journey',
                 style: TextStyle(fontSize: 18, color: Colors.white70),
               ),
-              const SizedBox(height: 48),
-              ElevatedButton(
-                onPressed: () => context.go(AppRouter.onboarding),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Color(0xFF8B5CF6),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                ),
-                child: const Text('Get Started'),
+              SizedBox(height: 48),
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             ],
           ),
@@ -190,30 +159,30 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  final List<BottomNavigationBarItem> _navItems = [
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.dashboard_outlined),
-      activeIcon: Icon(Icons.dashboard),
-      label: 'Dashboard',
+  final List<BeautifulBottomNavItem> _navItems = [
+    const BeautifulBottomNavItem(
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'Home',
     ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.mood_outlined),
-      activeIcon: Icon(Icons.mood),
+    const BeautifulBottomNavItem(
+      icon: Icons.favorite_outline_rounded,
+      activeIcon: Icons.favorite_rounded,
       label: 'Mood',
     ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.book_outlined),
-      activeIcon: Icon(Icons.book),
+    const BeautifulBottomNavItem(
+      icon: Icons.edit_note_outlined,
+      activeIcon: Icons.edit_note_rounded,
       label: 'Journal',
     ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.analytics_outlined),
-      activeIcon: Icon(Icons.analytics),
+    const BeautifulBottomNavItem(
+      icon: Icons.insights_outlined,
+      activeIcon: Icons.insights_rounded,
       label: 'Analytics',
     ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.person_outline),
-      activeIcon: Icon(Icons.person),
+    const BeautifulBottomNavItem(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
       label: 'Profile',
     ),
   ];
@@ -230,8 +199,8 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
+      extendBody: true,
+      bottomNavigationBar: BeautifulBottomNav(
         currentIndex: _currentIndex,
         items: _navItems,
         onTap: (index) {

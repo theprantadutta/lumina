@@ -15,11 +15,7 @@ class JournalEntryScreen extends ConsumerStatefulWidget {
   final JournalTemplate? template;
   final String? entryId; // For editing existing entry
 
-  const JournalEntryScreen({
-    super.key,
-    this.template,
-    this.entryId,
-  });
+  const JournalEntryScreen({super.key, this.template, this.entryId});
 
   @override
   ConsumerState<JournalEntryScreen> createState() => _JournalEntryScreenState();
@@ -31,7 +27,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
   late AnimationController _fabController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   final TextEditingController _titleController = TextEditingController();
   String _content = '';
   JournalTemplate _selectedTemplate = JournalTemplate.freeform;
@@ -41,11 +37,11 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
   final List<Gratitude> _gratitudeList = [];
   bool _isLoading = false;
   bool _isFavorite = false;
-  
+
   final FocusNode _titleFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
   final ImagePicker _imagePicker = ImagePicker();
-  
+
   String? _currentPrompt;
 
   @override
@@ -60,21 +56,14 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
       vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 1.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _pageController,
-      curve: Curves.elasticOut,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero).animate(
+          CurvedAnimation(parent: _pageController, curve: Curves.elasticOut),
+        );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _pageController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pageController, curve: Curves.easeInOut),
+    );
 
     _selectedTemplate = widget.template ?? JournalTemplate.freeform;
     _generateRandomPrompt();
@@ -229,7 +218,11 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
                       style: const TextStyle(color: Colors.white),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.expand_more, color: Colors.white, size: 20),
+                    const Icon(
+                      Icons.expand_more,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ],
                 ),
               ),
@@ -250,7 +243,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
 
   Widget _buildPromptCard() {
     if (_currentPrompt == null) return const SizedBox.shrink();
-    
+
     return GlassMorphismCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -347,7 +340,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? mood.color.withValues(alpha: 0.3)
@@ -370,7 +366,9 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
                         mood.displayName,
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           fontSize: isSelected ? 14 : 12,
                         ),
                       ),
@@ -500,7 +498,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
               const Spacer(),
               IconButton(
                 onPressed: _addImage,
-                icon: const Icon(Icons.add_photo_alternate_outlined, color: Colors.white),
+                icon: const Icon(
+                  Icons.add_photo_alternate_outlined,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
@@ -592,7 +593,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
               runSpacing: 8,
               children: _tags.map((tag) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(16),
@@ -602,7 +606,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
                     children: [
                       Text(
                         '#$tag',
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       GestureDetector(
@@ -666,7 +673,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
                 itemBuilder: (context, index) {
                   final template = JournalTemplate.values[index];
                   final isSelected = _selectedTemplate == template;
-                  
+
                   return ListTile(
                     leading: Icon(
                       template.icon,
@@ -676,7 +683,9 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
                       template.displayName,
                       style: TextStyle(
                         color: isSelected ? Colors.white : Colors.white70,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                     subtitle: Text(
@@ -713,10 +722,13 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
       builder: (context) {
         String gratitudeText = '';
         GratitudeCategory selectedCategory = GratitudeCategory.simpleJoys;
-        
+
         return AlertDialog(
           backgroundColor: const Color(0xFF1A1A1A),
-          title: const Text('Add Gratitude', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'Add Gratitude',
+            style: TextStyle(color: Colors.white),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -752,18 +764,23 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white70),
+              ),
             ),
             TextButton(
               onPressed: () {
                 if (gratitudeText.isNotEmpty) {
                   setState(() {
-                    _gratitudeList.add(Gratitude(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      text: gratitudeText,
-                      category: selectedCategory,
-                      createdAt: DateTime.now(),
-                    ));
+                    _gratitudeList.add(
+                      Gratitude(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        text: gratitudeText,
+                        category: selectedCategory,
+                        createdAt: DateTime.now(),
+                      ),
+                    );
                   });
                 }
                 Navigator.pop(context);
@@ -783,7 +800,9 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
   }
 
   Future<void> _addImage() async {
-    final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (image != null) {
       // For now, just add a placeholder URL
       // In a real app, you'd upload to Firebase Storage
@@ -818,7 +837,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white70),
+              ),
             ),
             TextButton(
               onPressed: () {

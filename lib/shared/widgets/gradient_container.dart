@@ -82,18 +82,12 @@ class _AnimatedGradientContainerState extends State<AnimatedGradientContainer>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
-    
+    _controller = AnimationController(duration: widget.duration, vsync: this);
+
     _animation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -120,8 +114,8 @@ class _AnimatedGradientContainerState extends State<AnimatedGradientContainer>
       animation: _animation,
       builder: (context, child) {
         final currentGradient = widget.gradients[_currentIndex];
-        final nextGradient = widget
-            .gradients[(_currentIndex + 1) % widget.gradients.length];
+        final nextGradient =
+            widget.gradients[(_currentIndex + 1) % widget.gradients.length];
 
         return Container(
           width: widget.width,

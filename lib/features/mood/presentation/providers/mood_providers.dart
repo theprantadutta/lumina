@@ -9,37 +9,35 @@ final moodServiceProvider = Provider<MoodService>((ref) {
 });
 
 // Current mood entry state provider (for the entry form)
-final currentMoodEntryProvider = StateNotifierProvider<CurrentMoodEntryNotifier, MoodEntryState>((ref) {
-  return CurrentMoodEntryNotifier();
-});
+final currentMoodEntryProvider =
+    StateNotifierProvider<CurrentMoodEntryNotifier, MoodEntryState>((ref) {
+      return CurrentMoodEntryNotifier();
+    });
 
 // Mood entries provider
 final moodEntriesProvider = StreamProvider<List<MoodEntry>>((ref) {
   final user = ref.watch(currentUserProvider);
   final moodService = ref.watch(moodServiceProvider);
-  
+
   if (user == null) {
     return Stream.value([]);
   }
-  
-  return moodService.getMoodEntriesStream(
-    userId: user.uid,
-    limit: 100,
-  );
+
+  return moodService.getMoodEntriesStream(userId: user.uid, limit: 100);
 });
 
 // Recent mood entries provider (last 7 days)
 final recentMoodEntriesProvider = FutureProvider<List<MoodEntry>>((ref) async {
   final user = ref.watch(currentUserProvider);
   final moodService = ref.watch(moodServiceProvider);
-  
+
   if (user == null) {
     return [];
   }
-  
+
   final now = DateTime.now();
   final sevenDaysAgo = now.subtract(const Duration(days: 7));
-  
+
   return moodService.getMoodEntries(
     userId: user.uid,
     startDate: sevenDaysAgo,
@@ -48,25 +46,23 @@ final recentMoodEntriesProvider = FutureProvider<List<MoodEntry>>((ref) async {
 });
 
 // Mood entries for specific date provider
-final moodEntriesForDateProvider = FutureProvider.family<List<MoodEntry>, DateTime>((ref, date) async {
-  final user = ref.watch(currentUserProvider);
-  final moodService = ref.watch(moodServiceProvider);
-  
-  if (user == null) {
-    return [];
-  }
-  
-  return moodService.getMoodEntriesForDate(
-    userId: user.uid,
-    date: date,
-  );
-});
+final moodEntriesForDateProvider =
+    FutureProvider.family<List<MoodEntry>, DateTime>((ref, date) async {
+      final user = ref.watch(currentUserProvider);
+      final moodService = ref.watch(moodServiceProvider);
+
+      if (user == null) {
+        return [];
+      }
+
+      return moodService.getMoodEntriesForDate(userId: user.uid, date: date);
+    });
 
 // Mood statistics provider
 final moodStatisticsProvider = FutureProvider<MoodStatistics>((ref) async {
   final user = ref.watch(currentUserProvider);
   final moodService = ref.watch(moodServiceProvider);
-  
+
   if (user == null) {
     return const MoodStatistics(
       totalEntries: 0,
@@ -75,10 +71,10 @@ final moodStatisticsProvider = FutureProvider<MoodStatistics>((ref) async {
       averageIntensity: 0.0,
     );
   }
-  
+
   final now = DateTime.now();
   final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-  
+
   return moodService.getMoodStatistics(
     userId: user.uid,
     startDate: thirtyDaysAgo,
@@ -87,21 +83,25 @@ final moodStatisticsProvider = FutureProvider<MoodStatistics>((ref) async {
 });
 
 // Mood trends provider
-final moodTrendsProvider = FutureProvider.family<List<MoodTrendPoint>, MoodTrendsParams>((ref, params) async {
-  final user = ref.watch(currentUserProvider);
-  final moodService = ref.watch(moodServiceProvider);
-  
-  if (user == null) {
-    return [];
-  }
-  
-  return moodService.getMoodTrends(
-    userId: user.uid,
-    startDate: params.startDate,
-    endDate: params.endDate,
-    period: params.period,
-  );
-});
+final moodTrendsProvider =
+    FutureProvider.family<List<MoodTrendPoint>, MoodTrendsParams>((
+      ref,
+      params,
+    ) async {
+      final user = ref.watch(currentUserProvider);
+      final moodService = ref.watch(moodServiceProvider);
+
+      if (user == null) {
+        return [];
+      }
+
+      return moodService.getMoodTrends(
+        userId: user.uid,
+        startDate: params.startDate,
+        endDate: params.endDate,
+        period: params.period,
+      );
+    });
 
 // Mood entry actions provider
 final moodEntryActionsProvider = Provider<MoodEntryActions>((ref) {
@@ -114,10 +114,7 @@ class CurrentMoodEntryNotifier extends StateNotifier<MoodEntryState> {
   CurrentMoodEntryNotifier() : super(const MoodEntryState());
 
   void updateMood(MoodType mood) {
-    state = state.copyWith(
-      selectedMood: mood,
-      intensity: mood.baseIntensity,
-    );
+    state = state.copyWith(selectedMood: mood, intensity: mood.baseIntensity);
   }
 
   void updateIntensity(int intensity) {

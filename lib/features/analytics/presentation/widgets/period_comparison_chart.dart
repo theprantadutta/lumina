@@ -42,14 +42,10 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
       duration: widget.animationDuration,
       vsync: this,
     );
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
-    
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+
     Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) {
         _animationController.forward();
@@ -160,17 +156,16 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
               },
               touchTooltipData: BarTouchTooltipData(
                 getTooltipColor: (group) => Colors.black87,
-                tooltipRoundedRadius: 8,
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
                   final categories = _getCombinedCategories();
                   if (groupIndex >= categories.length) return null;
-                  
+
                   final category = categories[groupIndex];
                   final value = rod.toY;
-                  final period = rodIndex == 0 
-                      ? widget.currentPeriodLabel 
+                  final period = rodIndex == 0
+                      ? widget.currentPeriodLabel
                       : widget.previousPeriodLabel;
-                  
+
                   return BarTooltipItem(
                     '$category\n$period: ${value.toStringAsFixed(1)}',
                     const TextStyle(
@@ -215,16 +210,10 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
               horizontalInterval: _getMaxValue() / 5,
               verticalInterval: 1,
               getDrawingHorizontalLine: (value) {
-                return const FlLine(
-                  color: Colors.white12,
-                  strokeWidth: 1,
-                );
+                return const FlLine(color: Colors.white12, strokeWidth: 1);
               },
               getDrawingVerticalLine: (value) {
-                return const FlLine(
-                  color: Colors.white12,
-                  strokeWidth: 1,
-                );
+                return const FlLine(color: Colors.white12, strokeWidth: 1);
               },
             ),
             barGroups: _buildBarGroups(),
@@ -247,16 +236,10 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
               horizontalInterval: _getMaxValue() / 5,
               verticalInterval: 1,
               getDrawingHorizontalLine: (value) {
-                return const FlLine(
-                  color: Colors.white12,
-                  strokeWidth: 1,
-                );
+                return const FlLine(color: Colors.white12, strokeWidth: 1);
               },
               getDrawingVerticalLine: (value) {
-                return const FlLine(
-                  color: Colors.white12,
-                  strokeWidth: 1,
-                );
+                return const FlLine(color: Colors.white12, strokeWidth: 1);
               },
             ),
             titlesData: FlTitlesData(
@@ -302,11 +285,11 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
                   show: true,
                   getDotPainter: (spot, percent, barData, index) =>
                       FlDotCirclePainter(
-                    radius: 6,
-                    color: Colors.white,
-                    strokeWidth: 3,
-                    strokeColor: AppGradients.primary.colors.first,
-                  ),
+                        radius: 6,
+                        color: Colors.white,
+                        strokeWidth: 3,
+                        strokeColor: AppGradients.primary.colors.first,
+                      ),
                 ),
                 belowBarData: BarAreaData(
                   show: true,
@@ -325,10 +308,7 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
                 spots: _buildPreviousPeriodSpots(),
                 isCurved: true,
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.white60,
-                    Colors.white.withValues(alpha: 0.4),
-                  ],
+                  colors: [Colors.white60, Colors.white.withValues(alpha: 0.4)],
                 ),
                 barWidth: 2,
                 isStrokeCapRound: true,
@@ -337,11 +317,11 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
                   show: true,
                   getDotPainter: (spot, percent, barData, index) =>
                       FlDotCirclePainter(
-                    radius: 4,
-                    color: Colors.white60,
-                    strokeWidth: 2,
-                    strokeColor: Colors.white.withValues(alpha: 0.4),
-                  ),
+                        radius: 4,
+                        color: Colors.white60,
+                        strokeWidth: 2,
+                        strokeColor: Colors.white.withValues(alpha: 0.4),
+                      ),
                 ),
               ),
             ],
@@ -354,15 +334,15 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
 
   List<BarChartGroupData> _buildBarGroups() {
     final categories = _getCombinedCategories();
-    
+
     return categories.asMap().entries.map((entry) {
       final index = entry.key;
       final category = entry.value;
       final isTouched = index == _touchedIndex;
-      
+
       final currentValue = widget.currentPeriodData[category] ?? 0.0;
       final previousValue = widget.previousPeriodData[category] ?? 0.0;
-      
+
       return BarChartGroupData(
         x: index,
         barRods: [
@@ -417,23 +397,17 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
 
     final categories = _getCombinedCategories();
     final index = value.toInt();
-    
+
     if (index < 0 || index >= categories.length) {
       return Container();
     }
 
     final category = categories[index];
-    final shortName = category.length > 8 
-        ? '${category.substring(0, 6)}..' 
+    final shortName = category.length > 8
+        ? '${category.substring(0, 6)}..'
         : category;
 
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      child: Transform.rotate(
-        angle: -0.3,
-        child: Text(shortName, style: style),
-      ),
-    );
+    return Transform.rotate(angle: -0.3, child: Text(shortName, style: style));
   }
 
   Widget _buildLeftTitles(double value, TitleMeta meta) {
@@ -479,45 +453,50 @@ class _PeriodComparisonChartState extends State<PeriodComparisonChart>
             color: color,
             borderRadius: BorderRadius.circular(1.5),
           ),
-          child: isSolid ? null : Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(1.5),
-              border: Border.all(color: color, width: 1),
-            ),
-          ),
+          child: isSolid
+              ? null
+              : Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(1.5),
+                    border: Border.all(color: color, width: 1),
+                  ),
+                ),
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
       ],
     );
   }
 
   Widget _buildComparisonSummary() {
-    final currentTotal = widget.currentPeriodData.values
-        .fold<double>(0.0, (sum, value) => sum + value);
-    final previousTotal = widget.previousPeriodData.values
-        .fold<double>(0.0, (sum, value) => sum + value);
-    
+    final currentTotal = widget.currentPeriodData.values.fold<double>(
+      0.0,
+      (sum, value) => sum + value,
+    );
+    final previousTotal = widget.previousPeriodData.values.fold<double>(
+      0.0,
+      (sum, value) => sum + value,
+    );
+
     final difference = currentTotal - previousTotal;
-    final percentageChange = previousTotal != 0 
-        ? (difference / previousTotal) * 100 
+    final percentageChange = previousTotal != 0
+        ? (difference / previousTotal) * 100
         : 0.0;
-    
+
     final isPositive = difference >= 0;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.3),
+          color: (isPositive ? Colors.green : Colors.red).withValues(
+            alpha: 0.3,
+          ),
           width: 1,
         ),
       ),
@@ -616,9 +595,9 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
     with TickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
-  
+
   ComparisonChartType _chartType = ComparisonChartType.bar;
-  
+
   Map<String, double> _currentMoodData = {};
   Map<String, double> _previousMoodData = {};
   Map<String, double> _currentJournalData = {};
@@ -641,10 +620,10 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
 
   Future<void> _loadComparisonData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       await Future.delayed(const Duration(milliseconds: 800));
-      
+
       setState(() {
         // Mock current period mood data
         _currentMoodData = {
@@ -657,7 +636,7 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
           'Angry': 2.1,
           'Depressed': 1.8,
         };
-        
+
         // Mock previous period mood data
         _previousMoodData = {
           'Happy': 7.1,
@@ -669,7 +648,7 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
           'Angry': 2.9,
           'Depressed': 2.4,
         };
-        
+
         // Mock journal data
         _currentJournalData = {
           'Daily': 12,
@@ -678,7 +657,7 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
           'Goal Setting': 4,
           'Stream of Consciousness': 3,
         };
-        
+
         _previousJournalData = {
           'Daily': 9,
           'Gratitude': 6,
@@ -686,7 +665,7 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
           'Goal Setting': 2,
           'Stream of Consciousness': 4,
         };
-        
+
         // Mock activity data
         _currentActivityData = {
           'Exercise': 15,
@@ -696,7 +675,7 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
           'Creative': 6,
           'Learning': 4,
         };
-        
+
         _previousActivityData = {
           'Exercise': 10,
           'Social Time': 14,
@@ -705,7 +684,7 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
           'Creative': 4,
           'Learning': 3,
         };
-        
+
         _isLoading = false;
       });
     } catch (e) {
@@ -840,10 +819,7 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
             ),
             child: Row(
               children: [
-                _buildChartTypeButton(
-                  ComparisonChartType.bar,
-                  Icons.bar_chart,
-                ),
+                _buildChartTypeButton(ComparisonChartType.bar, Icons.bar_chart),
                 _buildChartTypeButton(
                   ComparisonChartType.line,
                   Icons.show_chart,
@@ -858,21 +834,21 @@ class _PeriodComparisonViewState extends State<PeriodComparisonView>
 
   Widget _buildChartTypeButton(ComparisonChartType type, IconData icon) {
     final isSelected = _chartType == type;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _chartType = type),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? AppGradients.primary.colors.first.withValues(alpha: 0.3)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           icon,
-          color: isSelected 
-              ? AppGradients.primary.colors.first 
+          color: isSelected
+              ? AppGradients.primary.colors.first
               : Colors.white60,
           size: 20,
         ),

@@ -27,7 +27,9 @@ class LoadingOverlay extends StatelessWidget {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: (backgroundColor ?? Colors.black).withValues(alpha: opacity),
+              color: (backgroundColor ?? Colors.black).withValues(
+                alpha: opacity,
+              ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 3.0, sigmaY: 3.0),
                 child: Center(
@@ -97,18 +99,12 @@ class _AnimatedLoadingOverlayState extends State<AnimatedLoadingOverlay>
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _scaleAnimation = Tween<double>(
       begin: 0.8,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     if (widget.isLoading) {
       _controller.forward();
@@ -144,7 +140,7 @@ class _AnimatedLoadingOverlayState extends State<AnimatedLoadingOverlay>
             if (_fadeAnimation.value == 0.0) {
               return const SizedBox.shrink();
             }
-            
+
             return Positioned.fill(
               child: Opacity(
                 opacity: _fadeAnimation.value,
@@ -239,26 +235,17 @@ class _PulsingLoadingIndicatorState extends State<PulsingLoadingIndicator>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
 
     _scaleAnimation = Tween<double>(
       begin: 0.8,
       end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _opacityAnimation = Tween<double>(
       begin: 0.8,
       end: 0.2,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _controller.repeat(reverse: true);
   }
@@ -284,17 +271,11 @@ class _PulsingLoadingIndicatorState extends State<PulsingLoadingIndicator>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [
-                    widget.color,
-                    widget.color.withValues(alpha: 0.2),
-                  ],
+                  colors: [widget.color, widget.color.withValues(alpha: 0.2)],
                 ),
               ),
               child: const Center(
-                child: Icon(
-                  Icons.psychology_alt_rounded,
-                  color: Colors.white,
-                ),
+                child: Icon(Icons.psychology_alt_rounded, color: Colors.white),
               ),
             ),
           ),

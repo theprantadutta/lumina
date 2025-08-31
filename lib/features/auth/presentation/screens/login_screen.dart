@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lumina/core/router/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumina/core/providers/app_state_notifier.dart';
+import 'package:lumina/features/auth/presentation/providers/auth_provider.dart';
+import 'package:lumina/features/auth/presentation/screens/signup_screen.dart';
 import 'package:lumina/core/theme/app_colors.dart';
 import 'package:lumina/core/theme/app_gradients.dart';
 import 'package:lumina/shared/widgets/gradient_container.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -80,8 +82,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                            .hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return 'Please enter a valid email';
                         }
                         return null;
@@ -122,14 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {
-                          // TODO: Implement forgot password
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Forgot password coming soon!'),
-                            ),
-                          );
-                        },
+                        onPressed: _handleForgotPassword,
                         child: const Text('Forgot Password?'),
                       ),
                     ),
@@ -222,7 +218,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const Text("Don't have an account? "),
                   TextButton(
-                    onPressed: () => context.go(AppRouter.signup),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const SignupScreen(),
+                        ),
+                      );
+                    },
                     child: const Text(
                       'Sign Up',
                       style: TextStyle(fontWeight: FontWeight.w600),
@@ -245,18 +247,39 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // TODO: Implement actual login logic
-      await Future.delayed(const Duration(seconds: 2));
-      
+      final authService = ref.read(authServiceProvider);
+      await authService.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      // The auth state listener will automatically update the app state
       if (mounted) {
-        context.go(AppRouter.dashboard);
+        final appStateNotifier = ref.read(appStateNotifierProvider.notifier);
+        await appStateNotifier.userLoggedIn();
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Login failed';
+        if (e.toString().contains('user-not-found')) {
+          errorMessage = 'No account found with this email';
+        } else if (e.toString().contains('wrong-password')) {
+          errorMessage = 'Incorrect password';
+        } else if (e.toString().contains('invalid-email')) {
+          errorMessage = 'Please enter a valid email address';
+        } else if (e.toString().contains('user-disabled')) {
+          errorMessage = 'This account has been disabled';
+        } else if (e.toString().contains('too-many-requests')) {
+          errorMessage = 'Too many failed attempts. Please try again later';
+        } else {
+          errorMessage = 'Login failed: ${e.toString()}';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login failed: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -265,6 +288,61 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  void _handleForgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email address first'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid email address'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final authService = ref.read(authServiceProvider);
+      await authService.sendPasswordResetEmail(email: email);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password reset email sent! Check your inbox.'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMessage = 'Failed to send reset email';
+        if (e.toString().contains('user-not-found')) {
+          errorMessage = 'No account found with this email address';
+        } else if (e.toString().contains('invalid-email')) {
+          errorMessage = 'Please enter a valid email address';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
     }
   }

@@ -33,6 +33,10 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Generated files
+**/*.g.dart
+**/*.freezed.dart
+
 # Symbolication related
 app.*.symbols
 
@@ -61,6 +65,3 @@ firebase.json
 
 # Ignoring environment variables
 *.env
-
-# Ignore Generated Files
-lib/generated/

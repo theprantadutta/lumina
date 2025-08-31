@@ -49,9 +49,11 @@ class JournalService {
       }
 
       final QuerySnapshot querySnapshot = await query.get();
-      
+
       List<JournalEntry> entries = querySnapshot.docs
-          .map((doc) => JournalEntry.fromJson(doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) => JournalEntry.fromJson(doc.data() as Map<String, dynamic>),
+          )
           .toList();
 
       // Filter by tags if specified (client-side filtering)
@@ -102,10 +104,25 @@ class JournalService {
   // Update journal entry
   Future<void> updateJournalEntry(JournalEntry journalEntry) async {
     try {
-      final updatedEntry = journalEntry.copyWith(
+      final updatedEntry = JournalEntry(
+        id: journalEntry.id,
+        userId: journalEntry.userId,
+        title: journalEntry.title,
+        content: journalEntry.content,
+        tags: journalEntry.tags,
+        imageUrls: journalEntry.imageUrls,
+        audioUrl: journalEntry.audioUrl,
+        gratitudeList: journalEntry.gratitudeList,
+        timestamp: journalEntry.timestamp,
+        createdAt: journalEntry.createdAt,
         updatedAt: DateTime.now(),
+        isFavorite: journalEntry.isFavorite,
+        mood: journalEntry.mood,
+        weather: journalEntry.weather,
+        location: journalEntry.location,
+        template: journalEntry.template,
       );
-      
+
       await _firestore
           .collection(_collection)
           .doc(journalEntry.id)
@@ -145,7 +162,9 @@ class JournalService {
 
     return query.snapshots().map((querySnapshot) {
       return querySnapshot.docs
-          .map((doc) => JournalEntry.fromJson(doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) => JournalEntry.fromJson(doc.data() as Map<String, dynamic>),
+          )
           .toList();
     });
   }
@@ -165,13 +184,14 @@ class JournalService {
       );
 
       final searchWords = searchQuery.toLowerCase().split(' ');
-      
+
       return entries.where((entry) {
         final titleLower = entry.title.toLowerCase();
         final contentLower = entry.content.toLowerCase();
-        
-        return searchWords.any((word) =>
-            titleLower.contains(word) || contentLower.contains(word));
+
+        return searchWords.any(
+          (word) => titleLower.contains(word) || contentLower.contains(word),
+        );
       }).toList();
     } catch (e) {
       throw Exception('Failed to search journal entries: $e');
@@ -195,9 +215,11 @@ class JournalService {
       }
 
       final QuerySnapshot querySnapshot = await query.get();
-      
+
       return querySnapshot.docs
-          .map((doc) => JournalEntry.fromJson(doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) => JournalEntry.fromJson(doc.data() as Map<String, dynamic>),
+          )
           .toList();
     } catch (e) {
       throw Exception('Failed to get favorite journal entries: $e');
@@ -244,9 +266,10 @@ class JournalService {
       // Find most used template
       final templateCounts = <JournalTemplate, int>{};
       for (final entry in entries) {
-        templateCounts[entry.template] = (templateCounts[entry.template] ?? 0) + 1;
+        templateCounts[entry.template] =
+            (templateCounts[entry.template] ?? 0) + 1;
       }
-      
+
       final mostUsedTemplate = templateCounts.entries
           .reduce((a, b) => a.value > b.value ? a : b)
           .key;
@@ -256,7 +279,7 @@ class JournalService {
       for (final entry in entries) {
         moodCounts[entry.mood] = (moodCounts[entry.mood] ?? 0) + 1;
       }
-      
+
       final mostCommonMood = moodCounts.entries
           .reduce((a, b) => a.value > b.value ? a : b)
           .key;
@@ -265,7 +288,9 @@ class JournalService {
       final favoriteCount = entries.where((entry) => entry.isFavorite).length;
 
       // Count entries with images
-      final entriesWithImages = entries.where((entry) => entry.imageUrls.isNotEmpty).length;
+      final entriesWithImages = entries
+          .where((entry) => entry.imageUrls.isNotEmpty)
+          .length;
 
       // Count total gratitude items
       final gratitudeCount = entries.fold<int>(
@@ -295,10 +320,7 @@ class JournalService {
   }
 
   // Get all unique tags used by a user
-  Future<List<String>> getUserTags({
-    required String userId,
-    int? limit,
-  }) async {
+  Future<List<String>> getUserTags({required String userId, int? limit}) async {
     try {
       final entries = await getJournalEntries(
         userId: userId,
@@ -341,7 +363,7 @@ class JournalService {
         streak = 1;
       } else {
         final daysDifference = lastDate.difference(entryDate).inDays;
-        
+
         if (daysDifference == 1) {
           // Consecutive day
           streak++;
@@ -372,8 +394,7 @@ class JournalService {
     }
 
     // Get unique dates and sort them
-    final uniqueDates = entriesByDate.keys.toList()
-      ..sort();
+    final uniqueDates = entriesByDate.keys.toList()..sort();
 
     if (uniqueDates.isEmpty) return 0;
 
@@ -383,10 +404,12 @@ class JournalService {
     for (int i = 1; i < uniqueDates.length; i++) {
       final previousDate = uniqueDates[i - 1];
       final currentDate = uniqueDates[i];
-      
+
       if (currentDate.difference(previousDate).inDays == 1) {
         currentStreak++;
-        longestStreak = longestStreak > currentStreak ? longestStreak : currentStreak;
+        longestStreak = longestStreak > currentStreak
+            ? longestStreak
+            : currentStreak;
       } else {
         currentStreak = 1;
       }

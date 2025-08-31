@@ -16,7 +16,7 @@ class InsightsService {
     DateTime? endDate,
   }) async {
     final insights = <Insight>[];
-    
+
     try {
       // Get mood and journal data
       final moodEntries = await _moodService.getMoodEntries(
@@ -24,7 +24,7 @@ class InsightsService {
         startDate: startDate,
         endDate: endDate,
       );
-      
+
       final journalEntries = await _journalService.getJournalEntries(
         userId: userId,
         startDate: startDate,
@@ -34,13 +34,17 @@ class InsightsService {
       // Generate various insights
       insights.addAll(await _generateMoodInsights(moodEntries));
       insights.addAll(await _generateJournalInsights(journalEntries));
-      insights.addAll(await _generatePatternInsights(moodEntries, journalEntries));
-      insights.addAll(await _generateStreakInsights(moodEntries, journalEntries));
+      insights.addAll(
+        await _generatePatternInsights(moodEntries, journalEntries),
+      );
+      insights.addAll(
+        await _generateStreakInsights(moodEntries, journalEntries),
+      );
       insights.addAll(await _generateCorrelationInsights(moodEntries));
 
       // Sort by priority and relevance
       insights.sort((a, b) => b.priority.compareTo(a.priority));
-      
+
       return insights.take(10).toList(); // Return top 10 insights
     } catch (e) {
       throw Exception('Failed to generate insights: $e');
@@ -49,57 +53,74 @@ class InsightsService {
 
   Future<List<Insight>> _generateMoodInsights(List<MoodEntry> entries) async {
     final insights = <Insight>[];
-    
+
     if (entries.isEmpty) return insights;
 
     // Average mood insight
-    final averageMood = entries.fold<double>(
-      0.0,
-      (sum, entry) => sum + entry.mood.baseIntensity,
-    ) / entries.length;
+    final averageMood =
+        entries.fold<double>(
+          0.0,
+          (sum, entry) => sum + entry.mood.baseIntensity,
+        ) /
+        entries.length;
 
     if (averageMood >= 7) {
-      insights.add(Insight(
-        id: 'mood_positive',
-        title: 'Great Mood Trend! 🌟',
-        description: 'Your average mood has been ${averageMood.toStringAsFixed(1)}/10. Keep up the positive momentum!',
-        type: InsightType.positive,
-        priority: 8,
-        actionable: true,
-        suggestion: 'Continue with activities that boost your mood, like the ones you\'ve been doing.',
-      ));
+      insights.add(
+        Insight(
+          id: 'mood_positive',
+          title: 'Great Mood Trend! 🌟',
+          description:
+              'Your average mood has been ${averageMood.toStringAsFixed(1)}/10. Keep up the positive momentum!',
+          type: InsightType.positive,
+          priority: 8,
+          actionable: true,
+          suggestion:
+              'Continue with activities that boost your mood, like the ones you\'ve been doing.',
+        ),
+      );
     } else if (averageMood <= 4) {
-      insights.add(Insight(
-        id: 'mood_concern',
-        title: 'Mood Support Needed',
-        description: 'Your mood has been averaging ${averageMood.toStringAsFixed(1)}/10 recently.',
-        type: InsightType.warning,
-        priority: 9,
-        actionable: true,
-        suggestion: 'Consider talking to someone you trust or trying mood-boosting activities.',
-      ));
+      insights.add(
+        Insight(
+          id: 'mood_concern',
+          title: 'Mood Support Needed',
+          description:
+              'Your mood has been averaging ${averageMood.toStringAsFixed(1)}/10 recently.',
+          type: InsightType.warning,
+          priority: 9,
+          actionable: true,
+          suggestion:
+              'Consider talking to someone you trust or trying mood-boosting activities.',
+        ),
+      );
     }
 
     // Mood consistency insight
     final moodVariability = _calculateMoodVariability(entries);
     if (moodVariability < 2.0) {
-      insights.add(Insight(
-        id: 'mood_stable',
-        title: 'Stable Mood Pattern',
-        description: 'Your mood has been quite consistent lately, which is a sign of emotional balance.',
-        type: InsightType.neutral,
-        priority: 5,
-      ));
+      insights.add(
+        Insight(
+          id: 'mood_stable',
+          title: 'Stable Mood Pattern',
+          description:
+              'Your mood has been quite consistent lately, which is a sign of emotional balance.',
+          type: InsightType.neutral,
+          priority: 5,
+        ),
+      );
     } else if (moodVariability > 4.0) {
-      insights.add(Insight(
-        id: 'mood_variable',
-        title: 'Fluctuating Moods',
-        description: 'Your mood has been quite variable recently. This might indicate stress or life changes.',
-        type: InsightType.warning,
-        priority: 7,
-        actionable: true,
-        suggestion: 'Try to identify patterns or triggers that might be causing mood swings.',
-      ));
+      insights.add(
+        Insight(
+          id: 'mood_variable',
+          title: 'Fluctuating Moods',
+          description:
+              'Your mood has been quite variable recently. This might indicate stress or life changes.',
+          type: InsightType.warning,
+          priority: 7,
+          actionable: true,
+          suggestion:
+              'Try to identify patterns or triggers that might be causing mood swings.',
+        ),
+      );
     }
 
     // Most common mood insight
@@ -107,107 +128,150 @@ class InsightsService {
     for (final entry in entries) {
       moodCounts[entry.mood] = (moodCounts[entry.mood] ?? 0) + 1;
     }
-    
-    final mostCommonMood = moodCounts.entries
-        .reduce((a, b) => a.value > b.value ? a : b);
-        
+
+    final mostCommonMood = moodCounts.entries.reduce(
+      (a, b) => a.value > b.value ? a : b,
+    );
+
     if (mostCommonMood.value > entries.length * 0.4) {
-      insights.add(Insight(
-        id: 'mood_dominant',
-        title: 'Dominant Mood: ${mostCommonMood.key.displayName}',
-        description: 'You\'ve felt ${mostCommonMood.key.displayName.toLowerCase()} ${((mostCommonMood.value / entries.length) * 100).toInt()}% of the time.',
-        type: mostCommonMood.key.baseIntensity >= 6 ? InsightType.positive : InsightType.neutral,
-        priority: 6,
-      ));
+      insights.add(
+        Insight(
+          id: 'mood_dominant',
+          title: 'Dominant Mood: ${mostCommonMood.key.displayName}',
+          description:
+              'You\'ve felt ${mostCommonMood.key.displayName.toLowerCase()} ${((mostCommonMood.value / entries.length) * 100).toInt()}% of the time.',
+          type: mostCommonMood.key.baseIntensity >= 6
+              ? InsightType.positive
+              : InsightType.neutral,
+          priority: 6,
+        ),
+      );
     }
 
     return insights;
   }
 
-  Future<List<Insight>> _generateJournalInsights(List<JournalEntry> entries) async {
+  Future<List<Insight>> _generateJournalInsights(
+    List<JournalEntry> entries,
+  ) async {
     final insights = <Insight>[];
-    
+
     if (entries.isEmpty) return insights;
 
     // Writing frequency insight
-    final daysWithEntries = entries.map((e) => DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day)).toSet().length;
-    final totalDays = DateTime.now().difference(entries.last.timestamp).inDays + 1;
+    final daysWithEntries = entries
+        .map(
+          (e) => DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day),
+        )
+        .toSet()
+        .length;
+    final totalDays =
+        DateTime.now().difference(entries.last.timestamp).inDays + 1;
     final writingFrequency = daysWithEntries / totalDays;
 
     if (writingFrequency >= 0.8) {
-      insights.add(Insight(
-        id: 'journal_frequent',
-        title: 'Excellent Journaling Habit! ✍️',
-        description: 'You\'ve been journaling ${(writingFrequency * 100).toInt()}% of days. Great consistency!',
-        type: InsightType.positive,
-        priority: 7,
-      ));
+      insights.add(
+        Insight(
+          id: 'journal_frequent',
+          title: 'Excellent Journaling Habit! ✍️',
+          description:
+              'You\'ve been journaling ${(writingFrequency * 100).toInt()}% of days. Great consistency!',
+          type: InsightType.positive,
+          priority: 7,
+        ),
+      );
     } else if (writingFrequency <= 0.3) {
-      insights.add(Insight(
-        id: 'journal_infrequent',
-        title: 'Room for More Journaling',
-        description: 'You\'ve journaled ${(writingFrequency * 100).toInt()}% of days. More frequent writing could help.',
-        type: InsightType.neutral,
-        priority: 4,
-        actionable: true,
-        suggestion: 'Try setting a daily reminder to write for just 5 minutes.',
-      ));
+      insights.add(
+        Insight(
+          id: 'journal_infrequent',
+          title: 'Room for More Journaling',
+          description:
+              'You\'ve journaled ${(writingFrequency * 100).toInt()}% of days. More frequent writing could help.',
+          type: InsightType.neutral,
+          priority: 4,
+          actionable: true,
+          suggestion:
+              'Try setting a daily reminder to write for just 5 minutes.',
+        ),
+      );
     }
 
     // Word count insights
-    final totalWords = entries.fold<int>(0, (sum, entry) => sum + entry.content.split(' ').length);
+    final totalWords = entries.fold<int>(
+      0,
+      (sum, entry) => sum + entry.content.split(' ').length,
+    );
     final averageWords = totalWords / entries.length;
 
     if (averageWords >= 200) {
-      insights.add(Insight(
-        id: 'journal_detailed',
-        title: 'Detailed Reflections',
-        description: 'Your journal entries average ${averageWords.toInt()} words. You\'re great at self-reflection!',
-        type: InsightType.positive,
-        priority: 5,
-      ));
+      insights.add(
+        Insight(
+          id: 'journal_detailed',
+          title: 'Detailed Reflections',
+          description:
+              'Your journal entries average ${averageWords.toInt()} words. You\'re great at self-reflection!',
+          type: InsightType.positive,
+          priority: 5,
+        ),
+      );
     }
 
     // Gratitude insights
-    final gratitudeCount = entries.fold<int>(0, (sum, entry) => sum + entry.gratitudeList.length);
+    final gratitudeCount = entries.fold<int>(
+      0,
+      (sum, entry) => sum + entry.gratitudeList.length,
+    );
     if (gratitudeCount > 0) {
-      insights.add(Insight(
-        id: 'gratitude_practice',
-        title: 'Gratitude Practice Active',
-        description: 'You\'ve noted $gratitudeCount things you\'re grateful for. Gratitude boosts wellbeing!',
-        type: InsightType.positive,
-        priority: 6,
-      ));
+      insights.add(
+        Insight(
+          id: 'gratitude_practice',
+          title: 'Gratitude Practice Active',
+          description:
+              'You\'ve noted $gratitudeCount things you\'re grateful for. Gratitude boosts wellbeing!',
+          type: InsightType.positive,
+          priority: 6,
+        ),
+      );
     }
 
     // Template usage insight
     final templateCounts = <JournalTemplate, int>{};
     for (final entry in entries) {
-      templateCounts[entry.template] = (templateCounts[entry.template] ?? 0) + 1;
+      templateCounts[entry.template] =
+          (templateCounts[entry.template] ?? 0) + 1;
     }
-    
-    final mostUsedTemplate = templateCounts.entries
-        .reduce((a, b) => a.value > b.value ? a : b);
-        
-    insights.add(Insight(
-      id: 'template_preference',
-      title: 'Favorite Template: ${mostUsedTemplate.key.displayName}',
-      description: 'You prefer ${mostUsedTemplate.key.displayName.toLowerCase()} journaling (${mostUsedTemplate.value} entries).',
-      type: InsightType.neutral,
-      priority: 3,
-    ));
+
+    final mostUsedTemplate = templateCounts.entries.reduce(
+      (a, b) => a.value > b.value ? a : b,
+    );
+
+    insights.add(
+      Insight(
+        id: 'template_preference',
+        title: 'Favorite Template: ${mostUsedTemplate.key.displayName}',
+        description:
+            'You prefer ${mostUsedTemplate.key.displayName.toLowerCase()} journaling (${mostUsedTemplate.value} entries).',
+        type: InsightType.neutral,
+        priority: 3,
+      ),
+    );
 
     return insights;
   }
 
-  Future<List<Insight>> _generatePatternInsights(List<MoodEntry> moodEntries, List<JournalEntry> journalEntries) async {
+  Future<List<Insight>> _generatePatternInsights(
+    List<MoodEntry> moodEntries,
+    List<JournalEntry> journalEntries,
+  ) async {
     final insights = <Insight>[];
 
     // Day of week patterns
     final moodByDayOfWeek = <int, List<double>>{};
     for (final entry in moodEntries) {
       final dayOfWeek = entry.timestamp.weekday;
-      moodByDayOfWeek.putIfAbsent(dayOfWeek, () => []).add(entry.mood.baseIntensity.toDouble());
+      moodByDayOfWeek
+          .putIfAbsent(dayOfWeek, () => [])
+          .add(entry.mood.baseIntensity.toDouble());
     }
 
     if (moodByDayOfWeek.isNotEmpty) {
@@ -216,20 +280,37 @@ class InsightsService {
         return MapEntry(day, avg);
       });
 
-      final bestDay = avgMoodByDay.entries.reduce((a, b) => a.value > b.value ? a : b);
-      final worstDay = avgMoodByDay.entries.reduce((a, b) => a.value < b.value ? a : b);
+      final bestDay = avgMoodByDay.entries.reduce(
+        (a, b) => a.value > b.value ? a : b,
+      );
+      final worstDay = avgMoodByDay.entries.reduce(
+        (a, b) => a.value < b.value ? a : b,
+      );
 
       if ((bestDay.value - worstDay.value) > 2.0) {
-        final dayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        insights.add(Insight(
-          id: 'day_pattern',
-          title: 'Weekly Mood Pattern',
-          description: 'Your mood is typically best on ${dayNames[bestDay.key]} and lowest on ${dayNames[worstDay.key]}.',
-          type: InsightType.neutral,
-          priority: 6,
-          actionable: true,
-          suggestion: 'Plan enjoyable activities for ${dayNames[worstDay.key]} to boost your mood.',
-        ));
+        final dayNames = [
+          '',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ];
+        insights.add(
+          Insight(
+            id: 'day_pattern',
+            title: 'Weekly Mood Pattern',
+            description:
+                'Your mood is typically best on ${dayNames[bestDay.key]} and lowest on ${dayNames[worstDay.key]}.',
+            type: InsightType.neutral,
+            priority: 6,
+            actionable: true,
+            suggestion:
+                'Plan enjoyable activities for ${dayNames[worstDay.key]} to boost your mood.',
+          ),
+        );
       }
     }
 
@@ -237,59 +318,77 @@ class InsightsService {
     final moodByHour = <int, List<double>>{};
     for (final entry in moodEntries) {
       final hour = entry.timestamp.hour;
-      moodByHour.putIfAbsent(hour, () => []).add(entry.mood.baseIntensity.toDouble());
+      moodByHour
+          .putIfAbsent(hour, () => [])
+          .add(entry.mood.baseIntensity.toDouble());
     }
 
     return insights;
   }
 
-  Future<List<Insight>> _generateStreakInsights(List<MoodEntry> moodEntries, List<JournalEntry> journalEntries) async {
+  Future<List<Insight>> _generateStreakInsights(
+    List<MoodEntry> moodEntries,
+    List<JournalEntry> journalEntries,
+  ) async {
     final insights = <Insight>[];
 
     // Journal streak
     final journalStreak = _calculateJournalStreak(journalEntries);
     if (journalStreak >= 7) {
-      insights.add(Insight(
-        id: 'journal_streak',
-        title: '🔥 ${journalStreak}-Day Journal Streak!',
-        description: 'You\'ve been journaling consistently for $journalStreak days. Amazing dedication!',
-        type: InsightType.positive,
-        priority: 8,
-      ));
+      insights.add(
+        Insight(
+          id: 'journal_streak',
+          title: '🔥 $journalStreak-Day Journal Streak!',
+          description:
+              'You\'ve been journaling consistently for $journalStreak days. Amazing dedication!',
+          type: InsightType.positive,
+          priority: 8,
+        ),
+      );
     } else if (journalStreak >= 3) {
-      insights.add(Insight(
-        id: 'journal_streak_building',
-        title: 'Building a Journal Streak',
-        description: 'You\'re on a $journalStreak-day journaling streak. Keep it going!',
-        type: InsightType.positive,
-        priority: 6,
-      ));
+      insights.add(
+        Insight(
+          id: 'journal_streak_building',
+          title: 'Building a Journal Streak',
+          description:
+              'You\'re on a $journalStreak-day journaling streak. Keep it going!',
+          type: InsightType.positive,
+          priority: 6,
+        ),
+      );
     }
 
     // Mood tracking streak
     final moodStreak = _calculateMoodStreak(moodEntries);
     if (moodStreak >= 14) {
-      insights.add(Insight(
-        id: 'mood_streak',
-        title: '📊 ${moodStreak}-Day Mood Tracking!',
-        description: 'You\'ve tracked your mood for $moodStreak consecutive days!',
-        type: InsightType.positive,
-        priority: 7,
-      ));
+      insights.add(
+        Insight(
+          id: 'mood_streak',
+          title: '📊 $moodStreak-Day Mood Tracking!',
+          description:
+              'You\'ve tracked your mood for $moodStreak consecutive days!',
+          type: InsightType.positive,
+          priority: 7,
+        ),
+      );
     }
 
     return insights;
   }
 
-  Future<List<Insight>> _generateCorrelationInsights(List<MoodEntry> entries) async {
+  Future<List<Insight>> _generateCorrelationInsights(
+    List<MoodEntry> entries,
+  ) async {
     final insights = <Insight>[];
 
     // Factor correlation analysis
     final factorMoodCorrelations = <String, List<double>>{};
-    
+
     for (final entry in entries) {
       for (final factor in entry.factors) {
-        factorMoodCorrelations.putIfAbsent(factor, () => []).add(entry.mood.baseIntensity.toDouble());
+        factorMoodCorrelations
+            .putIfAbsent(factor, () => [])
+            .add(entry.mood.baseIntensity.toDouble());
       }
     }
 
@@ -298,7 +397,8 @@ class InsightsService {
     final negativeFactors = <String>[];
 
     factorMoodCorrelations.forEach((factor, moods) {
-      if (moods.length >= 3) { // Need at least 3 data points
+      if (moods.length >= 3) {
+        // Need at least 3 data points
         final avgMood = moods.reduce((a, b) => a + b) / moods.length;
         if (avgMood >= 7.0) {
           positiveFactors.add(factor);
@@ -309,27 +409,35 @@ class InsightsService {
     });
 
     if (positiveFactors.isNotEmpty) {
-      insights.add(Insight(
-        id: 'positive_factors',
-        title: 'Mood Boosters Identified',
-        description: 'These activities seem to boost your mood: ${positiveFactors.take(3).join(", ")}',
-        type: InsightType.positive,
-        priority: 8,
-        actionable: true,
-        suggestion: 'Try to incorporate these activities more often in your routine.',
-      ));
+      insights.add(
+        Insight(
+          id: 'positive_factors',
+          title: 'Mood Boosters Identified',
+          description:
+              'These activities seem to boost your mood: ${positiveFactors.take(3).join(", ")}',
+          type: InsightType.positive,
+          priority: 8,
+          actionable: true,
+          suggestion:
+              'Try to incorporate these activities more often in your routine.',
+        ),
+      );
     }
 
     if (negativeFactors.isNotEmpty) {
-      insights.add(Insight(
-        id: 'negative_factors',
-        title: 'Potential Mood Downers',
-        description: 'These factors might be affecting your mood negatively: ${negativeFactors.take(2).join(", ")}',
-        type: InsightType.warning,
-        priority: 7,
-        actionable: true,
-        suggestion: 'Consider ways to minimize or cope better with these factors.',
-      ));
+      insights.add(
+        Insight(
+          id: 'negative_factors',
+          title: 'Potential Mood Downers',
+          description:
+              'These factors might be affecting your mood negatively: ${negativeFactors.take(2).join(", ")}',
+          type: InsightType.warning,
+          priority: 7,
+          actionable: true,
+          suggestion:
+              'Consider ways to minimize or cope better with these factors.',
+        ),
+      );
     }
 
     return insights;
@@ -337,13 +445,20 @@ class InsightsService {
 
   double _calculateMoodVariability(List<MoodEntry> entries) {
     if (entries.length < 2) return 0.0;
-    
-    final mean = entries.fold<double>(0.0, (sum, entry) => sum + entry.mood.baseIntensity) / entries.length;
-    final variance = entries.fold<double>(0.0, (sum, entry) {
-      final diff = entry.mood.baseIntensity - mean;
-      return sum + (diff * diff);
-    }) / entries.length;
-    
+
+    final mean =
+        entries.fold<double>(
+          0.0,
+          (sum, entry) => sum + entry.mood.baseIntensity,
+        ) /
+        entries.length;
+    final variance =
+        entries.fold<double>(0.0, (sum, entry) {
+          final diff = entry.mood.baseIntensity - mean;
+          return sum + (diff * diff);
+        }) /
+        entries.length;
+
     return variance; // Return variance as a measure of variability
   }
 
@@ -357,7 +472,11 @@ class InsightsService {
     DateTime? lastDate;
 
     for (final entry in sortedEntries) {
-      final entryDate = DateTime(entry.timestamp.year, entry.timestamp.month, entry.timestamp.day);
+      final entryDate = DateTime(
+        entry.timestamp.year,
+        entry.timestamp.month,
+        entry.timestamp.day,
+      );
 
       if (lastDate == null) {
         lastDate = entryDate;
@@ -386,7 +505,11 @@ class InsightsService {
     DateTime? lastDate;
 
     for (final entry in sortedEntries) {
-      final entryDate = DateTime(entry.timestamp.year, entry.timestamp.month, entry.timestamp.day);
+      final entryDate = DateTime(
+        entry.timestamp.year,
+        entry.timestamp.month,
+        entry.timestamp.day,
+      );
 
       if (lastDate == null) {
         lastDate = entryDate;
@@ -428,12 +551,7 @@ class Insight {
   }) : createdAt = createdAt ?? DateTime.now();
 }
 
-enum InsightType {
-  positive,
-  neutral,
-  warning,
-  achievement,
-}
+enum InsightType { positive, neutral, warning, achievement }
 
 extension InsightTypeExtension on InsightType {
   String get displayName {

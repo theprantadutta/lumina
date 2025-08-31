@@ -37,7 +37,8 @@ class GlassMorphismCard extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: boxShadow ??
+        boxShadow:
+            boxShadow ??
             [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
@@ -55,7 +56,8 @@ class GlassMorphismCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: color.withValues(alpha: opacity),
               borderRadius: BorderRadius.circular(borderRadius),
-              border: border ??
+              border:
+                  border ??
                   Border.all(
                     color: Colors.white.withValues(alpha: 0.2),
                     width: 1.0,
@@ -125,26 +127,17 @@ class _AnimatedGlassMorphismCardState extends State<AnimatedGlassMorphismCard>
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _opacityAnimation = Tween<double>(
       begin: widget.opacity,
       end: widget.opacity * 1.5,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _blurAnimation = Tween<double>(
       begin: widget.blur,
       end: widget.blur * 1.2,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -210,9 +203,12 @@ class _AnimatedGlassMorphismCardState extends State<AnimatedGlassMorphismCard>
                   child: Container(
                     padding: widget.padding,
                     decoration: BoxDecoration(
-                      color: widget.color.withValues(alpha: _opacityAnimation.value),
+                      color: widget.color.withValues(
+                        alpha: _opacityAnimation.value,
+                      ),
                       borderRadius: BorderRadius.circular(widget.borderRadius),
-                      border: widget.border ??
+                      border:
+                          widget.border ??
                           Border.all(
                             color: Colors.white.withValues(
                               alpha: _isPressed ? 0.4 : 0.2,
@@ -255,10 +251,7 @@ class FrostedContainer extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: blurIntensity,
-          sigmaY: blurIntensity,
-        ),
+        filter: ImageFilter.blur(sigmaX: blurIntensity, sigmaY: blurIntensity),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(

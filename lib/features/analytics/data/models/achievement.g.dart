@@ -6,30 +6,29 @@ part of 'achievement.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$AchievementImpl _$$AchievementImplFromJson(Map<String, dynamic> json) =>
-    _$AchievementImpl(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      type: $enumDecode(_$AchievementTypeEnumMap, json['type']),
-      category: $enumDecode(_$AchievementCategoryEnumMap, json['category']),
-      targetValue: (json['targetValue'] as num).toInt(),
-      currentProgress: (json['currentProgress'] as num?)?.toInt() ?? 0,
-      isUnlocked: json['isUnlocked'] as bool? ?? false,
-      isNotified: json['isNotified'] as bool? ?? false,
-      unlockedAt: json['unlockedAt'] == null
-          ? null
-          : DateTime.parse(json['unlockedAt'] as String),
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-      tier: (json['tier'] as num?)?.toInt() ?? 1,
-      iconCodePoint: (json['iconCodePoint'] as num?)?.toInt() ?? 0,
-      iconFontFamily: json['iconFontFamily'] as String? ?? 'MaterialIcons',
-      reward: json['reward'] as String?,
-    );
+Achievement _$AchievementFromJson(Map<String, dynamic> json) => Achievement(
+  id: json['id'] as String,
+  title: json['title'] as String,
+  description: json['description'] as String,
+  type: $enumDecode(_$AchievementTypeEnumMap, json['type']),
+  category: $enumDecode(_$AchievementCategoryEnumMap, json['category']),
+  targetValue: (json['targetValue'] as num).toInt(),
+  currentProgress: (json['currentProgress'] as num?)?.toInt() ?? 0,
+  isUnlocked: json['isUnlocked'] as bool? ?? false,
+  isNotified: json['isNotified'] as bool? ?? false,
+  unlockedAt: json['unlockedAt'] == null
+      ? null
+      : DateTime.parse(json['unlockedAt'] as String),
+  createdAt: json['createdAt'] == null
+      ? null
+      : DateTime.parse(json['createdAt'] as String),
+  tier: (json['tier'] as num?)?.toInt() ?? 1,
+  iconCodePoint: (json['iconCodePoint'] as num?)?.toInt() ?? 0,
+  iconFontFamily: json['iconFontFamily'] as String? ?? 'MaterialIcons',
+  reward: json['reward'] as String?,
+);
 
-Map<String, dynamic> _$$AchievementImplToJson(_$AchievementImpl instance) =>
+Map<String, dynamic> _$AchievementToJson(Achievement instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
@@ -67,9 +66,7 @@ const _$AchievementCategoryEnumMap = {
   AchievementCategory.engagement: 'engagement',
 };
 
-_$UserProgressImpl _$$UserProgressImplFromJson(
-  Map<String, dynamic> json,
-) => _$UserProgressImpl(
+UserProgress _$UserProgressFromJson(Map<String, dynamic> json) => UserProgress(
   userId: json['userId'] as String,
   unlockedAchievements:
       (json['unlockedAchievements'] as List<dynamic>?)
@@ -98,7 +95,7 @@ _$UserProgressImpl _$$UserProgressImplFromJson(
       : DateTime.parse(json['lastUpdated'] as String),
 );
 
-Map<String, dynamic> _$$UserProgressImplToJson(_$UserProgressImpl instance) =>
+Map<String, dynamic> _$UserProgressToJson(UserProgress instance) =>
     <String, dynamic>{
       'userId': instance.userId,
       'unlockedAchievements': instance.unlockedAchievements,

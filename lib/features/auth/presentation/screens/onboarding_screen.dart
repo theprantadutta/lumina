@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lumina/core/router/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumina/core/providers/app_state_notifier.dart';
 import 'package:lumina/core/theme/app_colors.dart';
 import 'package:lumina/core/theme/app_gradients.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
@@ -19,25 +19,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingPage(
       icon: Icons.psychology_alt_rounded,
       title: 'Track Your Mood',
-      description: 'Monitor your emotional well-being with beautiful, intuitive mood tracking tools.',
+      description:
+          'Monitor your emotional well-being with beautiful, intuitive mood tracking tools.',
       gradient: AppGradients.primary,
     ),
     OnboardingPage(
       icon: Icons.edit_note_rounded,
       title: 'Journal Your Journey',
-      description: 'Express your thoughts and gratitude through our rich journaling experience.',
+      description:
+          'Express your thoughts and gratitude through our rich journaling experience.',
       gradient: AppGradients.secondary,
     ),
     OnboardingPage(
       icon: Icons.insights_rounded,
       title: 'Gain Insights',
-      description: 'Discover patterns in your wellness journey with beautiful data visualizations.',
+      description:
+          'Discover patterns in your wellness journey with beautiful data visualizations.',
       gradient: AppGradients.accent,
     ),
     OnboardingPage(
       icon: Icons.groups_rounded,
       title: 'Connect Mindfully',
-      description: 'Share your wellness achievements and connect with a supportive community.',
+      description:
+          'Share your wellness achievements and connect with a supportive community.',
       gradient: AppGradients.multiColorWellness,
     ),
   ];
@@ -113,7 +117,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       )
                     else
                       ElevatedButton(
-                        onPressed: () => context.go(AppRouter.login),
+                        onPressed: () async {
+                          final appStateNotifier = ref.read(appStateNotifierProvider.notifier);
+                          await appStateNotifier.completeOnboarding();
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryPurple,
                           foregroundColor: Colors.white,
@@ -176,11 +183,7 @@ class OnboardingPageWidget extends StatelessWidget {
                   width: 1,
                 ),
               ),
-              child: Icon(
-                page.icon,
-                size: 120,
-                color: Colors.white,
-              ),
+              child: Icon(page.icon, size: 120, color: Colors.white),
             ),
             const SizedBox(height: 48),
             Text(

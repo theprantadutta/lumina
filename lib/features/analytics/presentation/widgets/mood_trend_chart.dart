@@ -25,7 +25,6 @@ class _MoodTrendChartState extends State<MoodTrendChart>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
-  int? _touchedIndex;
 
   @override
   void initState() {
@@ -34,13 +33,9 @@ class _MoodTrendChartState extends State<MoodTrendChart>
       duration: widget.animationDuration,
       vsync: this,
     );
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
     _animationController.forward();
   }
 
@@ -97,16 +92,10 @@ class _MoodTrendChartState extends State<MoodTrendChart>
         horizontalInterval: 2,
         verticalInterval: 1,
         getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: Colors.white12,
-            strokeWidth: 1,
-          );
+          return const FlLine(color: Colors.white12, strokeWidth: 1);
         },
         getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: Colors.white12,
-            strokeWidth: 1,
-          );
+          return const FlLine(color: Colors.white12, strokeWidth: 1);
         },
       ),
       titlesData: FlTitlesData(
@@ -114,9 +103,7 @@ class _MoodTrendChartState extends State<MoodTrendChart>
         rightTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
-        topTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
@@ -153,11 +140,11 @@ class _MoodTrendChartState extends State<MoodTrendChart>
             show: true,
             getDotPainter: (spot, percent, barData, index) =>
                 FlDotCirclePainter(
-              radius: 6,
-              color: Colors.white,
-              strokeWidth: 3,
-              strokeColor: AppGradients.primary.colors.first,
-            ),
+                  radius: 6,
+                  color: Colors.white,
+                  strokeWidth: 3,
+                  strokeColor: AppGradients.primary.colors.first,
+                ),
           ),
           belowBarData: BarAreaData(
             show: true,
@@ -175,39 +162,27 @@ class _MoodTrendChartState extends State<MoodTrendChart>
       lineTouchData: LineTouchData(
         enabled: true,
         touchCallback: (FlTouchEvent event, LineTouchResponse? touchResponse) {
-          setState(() {
-            if (!event.isInterestedForInteractions ||
-                touchResponse == null ||
-                touchResponse.lineBarSpots == null) {
-              _touchedIndex = null;
-              return;
-            }
-            _touchedIndex = touchResponse.lineBarSpots!.first.spotIndex;
-          });
+          // Handle touch events if needed
         },
         getTouchedSpotIndicator:
             (LineChartBarData barData, List<int> spotIndexes) {
-          return spotIndexes.map((index) {
-            return TouchedSpotIndicatorData(
-              const FlLine(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-              FlDotData(
-                getDotPainter: (spot, percent, barData, index) =>
-                    FlDotCirclePainter(
-                  radius: 8,
-                  color: Colors.white,
-                  strokeWidth: 3,
-                  strokeColor: AppGradients.primary.colors.first,
-                ),
-              ),
-            );
-          }).toList();
-        },
+              return spotIndexes.map((index) {
+                return TouchedSpotIndicatorData(
+                  const FlLine(color: Colors.white, strokeWidth: 2),
+                  FlDotData(
+                    getDotPainter: (spot, percent, barData, index) =>
+                        FlDotCirclePainter(
+                          radius: 8,
+                          color: Colors.white,
+                          strokeWidth: 3,
+                          strokeColor: AppGradients.primary.colors.first,
+                        ),
+                  ),
+                );
+              }).toList();
+            },
         touchTooltipData: LineTouchTooltipData(
           getTooltipColor: (touchedSpot) => Colors.black87,
-          tooltipRoundedRadius: 8,
           getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
             return touchedBarSpots.map((barSpot) {
               final flSpot = barSpot;
@@ -228,18 +203,11 @@ class _MoodTrendChartState extends State<MoodTrendChart>
   }
 
   List<FlSpot> _buildSpots() {
-    return widget.trendData
-        .asMap()
-        .entries
-        .map((entry) {
-          final index = entry.key;
-          final data = entry.value;
-          return FlSpot(
-            index.toDouble(),
-            data.averageMood * _animation.value,
-          );
-        })
-        .toList();
+    return widget.trendData.asMap().entries.map((entry) {
+      final index = entry.key;
+      final data = entry.value;
+      return FlSpot(index.toDouble(), data.averageMood * _animation.value);
+    }).toList();
   }
 
   Widget _buildBottomTitles(double value, TitleMeta meta) {
@@ -248,19 +216,16 @@ class _MoodTrendChartState extends State<MoodTrendChart>
       fontWeight: FontWeight.bold,
       fontSize: 12,
     );
-    
+
     final index = value.toInt();
     if (index < 0 || index >= widget.trendData.length) {
       return Container();
     }
-    
+
     final date = widget.trendData[index].date;
     final text = _formatDateShort(date);
-    
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      child: Text(text, style: style),
-    );
+
+    return Text(text, style: style);
   }
 
   Widget _buildLeftTitles(double value, TitleMeta meta) {
@@ -269,7 +234,7 @@ class _MoodTrendChartState extends State<MoodTrendChart>
       fontWeight: FontWeight.bold,
       fontSize: 12,
     );
-    
+
     String text;
     switch (value.toInt()) {
       case 0:
@@ -284,7 +249,7 @@ class _MoodTrendChartState extends State<MoodTrendChart>
       default:
         return Container();
     }
-    
+
     return Text(text, style: style, textAlign: TextAlign.left);
   }
 
@@ -305,18 +270,12 @@ class _MoodTrendChartState extends State<MoodTrendChart>
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
       ],
     );
@@ -392,13 +351,9 @@ class _MoodDistributionChartState extends State<MoodDistributionChart>
       duration: widget.animationDuration,
       vsync: this,
     );
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
     _animationController.forward();
   }
 
@@ -445,7 +400,8 @@ class _MoodDistributionChartState extends State<MoodDistributionChart>
                             return;
                           }
                           _touchedIndex = pieTouchResponse
-                              .touchedSection!.touchedSectionIndex;
+                              .touchedSection!
+                              .touchedSectionIndex;
                         });
                       },
                     ),
@@ -467,7 +423,10 @@ class _MoodDistributionChartState extends State<MoodDistributionChart>
   }
 
   List<PieChartSectionData> _buildPieChartSections() {
-    final total = widget.moodCounts.values.fold<int>(0, (sum, count) => sum + count);
+    final total = widget.moodCounts.values.fold<int>(
+      0,
+      (sum, count) => sum + count,
+    );
     if (total == 0) return [];
 
     return widget.moodCounts.entries.toList().asMap().entries.map((entry) {
@@ -477,7 +436,7 @@ class _MoodDistributionChartState extends State<MoodDistributionChart>
       final count = moodEntry.value;
       final percentage = (count / total) * 100;
       final isTouched = index == _touchedIndex;
-      
+
       return PieChartSectionData(
         color: mood.color,
         value: count.toDouble() * _animation.value,
@@ -514,10 +473,7 @@ class _MoodDistributionChartState extends State<MoodDistributionChart>
             const SizedBox(width: 6),
             Text(
               '${mood.displayName} ($count)',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
         );

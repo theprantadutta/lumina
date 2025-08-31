@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lumina/core/router/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumina/core/providers/app_state_notifier.dart';
+import 'package:lumina/features/auth/presentation/providers/auth_provider.dart';
 import 'package:lumina/core/theme/app_colors.dart';
 import 'package:lumina/core/theme/app_gradients.dart';
 import 'package:lumina/shared/widgets/gradient_container.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -102,8 +103,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                            .hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return 'Please enter a valid email';
                         }
                         return null;
@@ -137,8 +139,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         if (value.length < 8) {
                           return 'Password must be at least 8 characters';
                         }
-                        if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)')
-                            .hasMatch(value)) {
+                        if (!RegExp(
+                          r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)',
+                        ).hasMatch(value)) {
                           return 'Password must contain uppercase, lowercase, and number';
                         }
                         return null;
@@ -307,7 +310,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 children: [
                   const Text('Already have an account? '),
                   TextButton(
-                    onPressed: () => context.go(AppRouter.login),
+                    onPressed: () => Navigator.of(context).pop(),
                     child: const Text(
                       'Sign In',
                       style: TextStyle(fontWeight: FontWeight.w600),
@@ -339,17 +342,42 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     try {
-      // TODO: Implement actual signup logic
-      await Future.delayed(const Duration(seconds: 2));
+      final authService = ref.read(authServiceProvider);
       
+      // Create the user account
+      final userCredential = await authService.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      // Update the user's display name
+      if (userCredential.user != null) {
+        await authService.updateDisplayName(
+          displayName: _nameController.text.trim(),
+        );
+      }
+
+      // Update app state to logged in
       if (mounted) {
-        context.go(AppRouter.dashboard);
+        final appStateNotifier = ref.read(appStateNotifierProvider.notifier);
+        await appStateNotifier.userLoggedIn();
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Signup failed';
+        if (e.toString().contains('weak-password')) {
+          errorMessage = 'The password provided is too weak';
+        } else if (e.toString().contains('email-already-in-use')) {
+          errorMessage = 'An account already exists for this email';
+        } else if (e.toString().contains('invalid-email')) {
+          errorMessage = 'Please enter a valid email address';
+        } else {
+          errorMessage = 'Signup failed: ${e.toString()}';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Signup failed: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.error,
           ),
         );

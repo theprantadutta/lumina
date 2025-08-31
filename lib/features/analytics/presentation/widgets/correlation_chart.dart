@@ -36,14 +36,10 @@ class _CorrelationChartState extends State<CorrelationChart>
       duration: widget.animationDuration,
       vsync: this,
     );
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
-    
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         _animationController.forward();
@@ -119,7 +115,6 @@ class _CorrelationChartState extends State<CorrelationChart>
         },
         touchTooltipData: BarTouchTooltipData(
           getTooltipColor: (group) => Colors.black87,
-          tooltipRoundedRadius: 8,
           getTooltipItem: (group, groupIndex, rod, rodIndex) {
             final factor = sortedData[groupIndex].key;
             final correlation = rod.toY;
@@ -140,13 +135,12 @@ class _CorrelationChartState extends State<CorrelationChart>
         rightTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
-        topTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            getTitlesWidget: (value, meta) => _buildBottomTitles(value, sortedData),
+            getTitlesWidget: (value, meta) =>
+                _buildBottomTitles(value, sortedData),
             reservedSize: 42,
           ),
         ),
@@ -175,22 +169,21 @@ class _CorrelationChartState extends State<CorrelationChart>
           );
         },
         getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: Colors.white12,
-            strokeWidth: 1,
-          );
+          return const FlLine(color: Colors.white12, strokeWidth: 1);
         },
       ),
       barGroups: _buildBarGroups(sortedData),
     );
   }
 
-  List<BarChartGroupData> _buildBarGroups(List<MapEntry<String, double>> sortedData) {
+  List<BarChartGroupData> _buildBarGroups(
+    List<MapEntry<String, double>> sortedData,
+  ) {
     return sortedData.asMap().entries.map((entry) {
       final index = entry.key;
       final correlation = entry.value.value;
       final isTouched = index == _touchedIndex;
-      
+
       return BarChartGroupData(
         x: index,
         barRods: [
@@ -209,10 +202,7 @@ class _CorrelationChartState extends State<CorrelationChart>
                     end: Alignment.topCenter,
                   )
                 : LinearGradient(
-                    colors: [
-                      Colors.red.withValues(alpha: 0.7),
-                      Colors.red,
-                    ],
+                    colors: [Colors.red.withValues(alpha: 0.7), Colors.red],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -222,7 +212,10 @@ class _CorrelationChartState extends State<CorrelationChart>
     }).toList();
   }
 
-  Widget _buildBottomTitles(double value, List<MapEntry<String, double>> sortedData) {
+  Widget _buildBottomTitles(
+    double value,
+    List<MapEntry<String, double>> sortedData,
+  ) {
     const style = TextStyle(
       color: Colors.white70,
       fontWeight: FontWeight.bold,
@@ -235,15 +228,11 @@ class _CorrelationChartState extends State<CorrelationChart>
     }
 
     final factor = sortedData[index].key;
-    final shortName = factor.length > 8 ? '${factor.substring(0, 6)}..' : factor;
+    final shortName = factor.length > 8
+        ? '${factor.substring(0, 6)}..'
+        : factor;
 
-    return SideTitleWidget(
-      axisSide: AxisSide.bottom,
-      child: Transform.rotate(
-        angle: -0.5,
-        child: Text(shortName, style: style),
-      ),
-    );
+    return Transform.rotate(angle: -0.5, child: Text(shortName, style: style));
   }
 
   Widget _buildLeftTitles(double value, TitleMeta meta) {
@@ -294,10 +283,19 @@ class _CorrelationChartState extends State<CorrelationChart>
           spacing: 16,
           runSpacing: 8,
           children: [
-            _buildLegendItem('Strong Positive (>0.7)', AppGradients.primary.colors.first),
-            _buildLegendItem('Moderate Positive (0.3-0.7)', AppGradients.primary.colors.first.withValues(alpha: 0.7)),
+            _buildLegendItem(
+              'Strong Positive (>0.7)',
+              AppGradients.primary.colors.first,
+            ),
+            _buildLegendItem(
+              'Moderate Positive (0.3-0.7)',
+              AppGradients.primary.colors.first.withValues(alpha: 0.7),
+            ),
             _buildLegendItem('Weak/None (-0.3-0.3)', Colors.white60),
-            _buildLegendItem('Moderate Negative (<-0.3)', Colors.red.withValues(alpha: 0.7)),
+            _buildLegendItem(
+              'Moderate Negative (<-0.3)',
+              Colors.red.withValues(alpha: 0.7),
+            ),
             _buildLegendItem('Strong Negative (<-0.7)', Colors.red),
           ],
         ),
@@ -320,10 +318,7 @@ class _CorrelationChartState extends State<CorrelationChart>
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 10,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 10),
         ),
       ],
     );
@@ -400,14 +395,15 @@ class WellnessCorrelationView extends StatefulWidget {
   });
 
   @override
-  State<WellnessCorrelationView> createState() => _WellnessCorrelationViewState();
+  State<WellnessCorrelationView> createState() =>
+      _WellnessCorrelationViewState();
 }
 
 class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
     with TickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
-  
+
   Map<String, double> _moodFactorCorrelations = {};
   Map<String, double> _timeOfDayCorrelations = {};
   Map<String, double> _weatherCorrelations = {};
@@ -428,10 +424,10 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
 
   Future<void> _loadCorrelationData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       setState(() {
         _moodFactorCorrelations = {
           'Exercise': 0.85,
@@ -443,7 +439,7 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
           'Screen Time': -0.38,
           'Meditation': 0.82,
         };
-        
+
         _timeOfDayCorrelations = {
           'Morning (6-9)': 0.42,
           'Mid-Morning (9-12)': 0.65,
@@ -452,7 +448,7 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
           'Night (18-21)': -0.15,
           'Late Night (21-24)': -0.45,
         };
-        
+
         _weatherCorrelations = {
           'Sunny': 0.78,
           'Partly Cloudy': 0.32,
@@ -461,7 +457,7 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
           'Stormy': -0.72,
           'Snowy': -0.28,
         };
-        
+
         _activityCorrelations = {
           'Outdoor Walk': 0.88,
           'Reading': 0.62,
@@ -472,7 +468,7 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
           'Commuting': -0.42,
           'Meeting': -0.38,
         };
-        
+
         _isLoading = false;
       });
     } catch (e) {
@@ -577,14 +573,10 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
   }
 
   Widget _buildInsightsSection(Map<String, double> data, String title) {
-    final positiveFactors = data.entries
-        .where((e) => e.value > 0.5)
-        .toList()
+    final positiveFactors = data.entries.where((e) => e.value > 0.5).toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    final negativeFactors = data.entries
-        .where((e) => e.value < -0.3)
-        .toList()
+    final negativeFactors = data.entries.where((e) => e.value < -0.3).toList()
       ..sort((a, b) => a.value.compareTo(b.value));
 
     return GlassMorphismCard(
@@ -601,7 +593,7 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           if (positiveFactors.isNotEmpty) ...[
             Text(
               'Mood Boosters',
@@ -612,17 +604,19 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
               ),
             ),
             const SizedBox(height: 8),
-            ...positiveFactors.take(3).map((factor) => 
-              _buildInsightItem(
-                factor.key,
-                factor.value,
-                Icons.trending_up,
-                AppGradients.primary.colors.first,
-              ),
-            ),
+            ...positiveFactors
+                .take(3)
+                .map(
+                  (factor) => _buildInsightItem(
+                    factor.key,
+                    factor.value,
+                    Icons.trending_up,
+                    AppGradients.primary.colors.first,
+                  ),
+                ),
             const SizedBox(height: 16),
           ],
-          
+
           if (negativeFactors.isNotEmpty) ...[
             const Text(
               'Mood Challenges',
@@ -633,31 +627,35 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
               ),
             ),
             const SizedBox(height: 8),
-            ...negativeFactors.take(3).map((factor) => 
-              _buildInsightItem(
-                factor.key,
-                factor.value,
-                Icons.trending_down,
-                Colors.red,
-              ),
-            ),
+            ...negativeFactors
+                .take(3)
+                .map(
+                  (factor) => _buildInsightItem(
+                    factor.key,
+                    factor.value,
+                    Icons.trending_down,
+                    Colors.red,
+                  ),
+                ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildInsightItem(String factor, double correlation, IconData icon, Color color) {
+  Widget _buildInsightItem(
+    String factor,
+    double correlation,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         children: [
@@ -674,7 +672,9 @@ class _WellnessCorrelationViewState extends State<WellnessCorrelationView>
             ),
           ),
           Text(
-            correlation > 0 ? '+${correlation.toStringAsFixed(2)}' : correlation.toStringAsFixed(2),
+            correlation > 0
+                ? '+${correlation.toStringAsFixed(2)}'
+                : correlation.toStringAsFixed(2),
             style: TextStyle(
               color: color,
               fontSize: 14,

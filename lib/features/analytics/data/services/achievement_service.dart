@@ -22,7 +22,7 @@ class AchievementService {
           inProgressAchievements: AchievementDefinitions.defaultAchievements,
           lastUpdated: DateTime.now(),
         );
-        
+
         await _saveUserProgress(newProgress);
         return newProgress;
       }
@@ -65,12 +65,25 @@ class AchievementService {
         );
 
         if (currentProgress >= achievement.targetValue) {
-          final unlockedAchievement = achievement.copyWith(
-            isUnlocked: true,
+          final unlockedAchievement = Achievement(
+            id: achievement.id,
+            title: achievement.title,
+            description: achievement.description,
+            type: achievement.type,
+            category: achievement.category,
+            targetValue: achievement.targetValue,
             currentProgress: currentProgress,
+            isUnlocked: true,
+            isNotified: achievement.isNotified,
             unlockedAt: DateTime.now(),
+            createdAt: achievement.createdAt,
+            tier: achievement.tier,
+            customIcon: achievement.customIcon,
+            iconCodePoint: achievement.iconCodePoint,
+            iconFontFamily: achievement.iconFontFamily,
+            reward: achievement.reward,
           );
-          
+
           newlyUnlocked.add(unlockedAchievement);
         }
       }
@@ -296,10 +309,7 @@ class AchievementService {
           .where('userId', isEqualTo: userId)
           .where('timestamp', isGreaterThanOrEqualTo: startOfDay);
 
-      final results = await Future.wait([
-        moodQuery.get(),
-        journalQuery.get(),
-      ]);
+      final results = await Future.wait([moodQuery.get(), journalQuery.get()]);
 
       return (results[0].docs.isNotEmpty && results[1].docs.isNotEmpty) ? 1 : 0;
     } catch (e) {
@@ -310,12 +320,15 @@ class AchievementService {
   Future<int> _getConsistencyStreak(String userId) async {
     try {
       final endDate = DateTime.now();
-      final startDate = endDate.subtract(const Duration(days: 30));
-      
+
       int streak = 0;
       for (int i = 0; i < 30; i++) {
         final checkDate = endDate.subtract(Duration(days: i));
-        final startOfDay = DateTime(checkDate.year, checkDate.month, checkDate.day);
+        final startOfDay = DateTime(
+          checkDate.year,
+          checkDate.month,
+          checkDate.day,
+        );
         final endOfDay = startOfDay.add(const Duration(days: 1));
 
         final moodQuery = await _firestore
@@ -370,13 +383,17 @@ class AchievementService {
         return 0;
       }
 
-      final thisWeekAvg = thisWeekEntries.docs
-          .map((doc) => MoodEntry.fromJson(doc.data()).mood.baseIntensity)
-          .reduce((a, b) => a + b) / thisWeekEntries.docs.length;
+      final thisWeekAvg =
+          thisWeekEntries.docs
+              .map((doc) => MoodEntry.fromJson(doc.data()).mood.baseIntensity)
+              .reduce((a, b) => a + b) /
+          thisWeekEntries.docs.length;
 
-      final lastWeekAvg = lastWeekEntries.docs
-          .map((doc) => MoodEntry.fromJson(doc.data()).mood.baseIntensity)
-          .reduce((a, b) => a + b) / lastWeekEntries.docs.length;
+      final lastWeekAvg =
+          lastWeekEntries.docs
+              .map((doc) => MoodEntry.fromJson(doc.data()).mood.baseIntensity)
+              .reduce((a, b) => a + b) /
+          lastWeekEntries.docs.length;
 
       final improvement = thisWeekAvg - lastWeekAvg;
       return improvement >= 2.0 ? improvement.round() : 0;
@@ -397,7 +414,7 @@ class AchievementService {
       if (entries.docs.isEmpty) return 0;
 
       final dailyAverages = <DateTime, List<int>>{};
-      
+
       for (final doc in entries.docs) {
         final entry = MoodEntry.fromJson(doc.data());
         final date = DateTime(
@@ -405,8 +422,7 @@ class AchievementService {
           entry.timestamp.month,
           entry.timestamp.day,
         );
-        dailyAverages.putIfAbsent(date, () => [])
-            .add(entry.mood.baseIntensity);
+        dailyAverages.putIfAbsent(date, () => []).add(entry.mood.baseIntensity);
       }
 
       int streak = 0;
@@ -414,9 +430,10 @@ class AchievementService {
         ..sort((a, b) => b.compareTo(a));
 
       for (final date in sortedDates) {
-        final avgMood = dailyAverages[date]!.reduce((a, b) => a + b) / 
-                       dailyAverages[date]!.length;
-        
+        final avgMood =
+            dailyAverages[date]!.reduce((a, b) => a + b) /
+            dailyAverages[date]!.length;
+
         if (avgMood >= 7.0) {
           streak++;
         } else {
@@ -508,33 +525,43 @@ class AchievementService {
     List<Achievement> newAchievements,
   ) async {
     try {
-      final updatedUnlocked = List<Achievement>.from(currentProgress.unlockedAchievements)
-        ..addAll(newAchievements);
+      final updatedUnlocked = List<Achievement>.from(
+        currentProgress.unlockedAchievements,
+      )..addAll(newAchievements);
 
-      final updatedInProgress = currentProgress.inProgressAchievements
-          .map((achievement) {
-            final newVersion = newAchievements
-                .firstWhere((a) => a.id == achievement.id, orElse: () => achievement);
-            return newVersion.isUnlocked ? newVersion : achievement;
-          })
-          .toList();
+      final updatedInProgress = currentProgress.inProgressAchievements.map((
+        achievement,
+      ) {
+        final newVersion = newAchievements.firstWhere(
+          (a) => a.id == achievement.id,
+          orElse: () => achievement,
+        );
+        return newVersion.isUnlocked ? newVersion : achievement;
+      }).toList();
 
       final addedPoints = newAchievements
           .map((a) => AchievementDefinitions.getPointsForTier(a.tier))
-          .fold<int>(0, (sum, points) => sum + points);
+          .fold<int>(0, (total, points) => total + points);
 
       final newTotalPoints = currentProgress.totalPoints + addedPoints;
       final newLevel = _calculateLevel(newTotalPoints);
-      final newLevelProgress = _calculateLevelProgress(newTotalPoints, newLevel);
-      final nextLevelReq = AchievementDefinitions.getLevelRequirement(newLevel + 1);
+      final newLevelProgress = _calculateLevelProgress(
+        newTotalPoints,
+        newLevel,
+      );
+      final nextLevelReq = AchievementDefinitions.getLevelRequirement(
+        newLevel + 1,
+      );
 
-      final updatedProgress = currentProgress.copyWith(
+      final updatedProgress = UserProgress(
+        userId: currentProgress.userId,
         unlockedAchievements: updatedUnlocked,
         inProgressAchievements: updatedInProgress,
         totalPoints: newTotalPoints,
         currentLevel: newLevel,
         currentLevelProgress: newLevelProgress,
         nextLevelRequirement: nextLevelReq,
+        categoryProgress: currentProgress.categoryProgress,
         lastUpdated: DateTime.now(),
       );
 
@@ -566,18 +593,45 @@ class AchievementService {
     return totalPoints - pointsUsed;
   }
 
-  Future<void> markAchievementAsNotified(String userId, String achievementId) async {
+  Future<void> markAchievementAsNotified(
+    String userId,
+    String achievementId,
+  ) async {
     try {
       final progress = await getUserProgress(userId);
       final updatedUnlocked = progress.unlockedAchievements.map((achievement) {
         if (achievement.id == achievementId) {
-          return achievement.copyWith(isNotified: true);
+          return Achievement(
+            id: achievement.id,
+            title: achievement.title,
+            description: achievement.description,
+            type: achievement.type,
+            category: achievement.category,
+            targetValue: achievement.targetValue,
+            currentProgress: achievement.currentProgress,
+            isUnlocked: achievement.isUnlocked,
+            isNotified: true,
+            unlockedAt: achievement.unlockedAt,
+            createdAt: achievement.createdAt,
+            tier: achievement.tier,
+            customIcon: achievement.customIcon,
+            iconCodePoint: achievement.iconCodePoint,
+            iconFontFamily: achievement.iconFontFamily,
+            reward: achievement.reward,
+          );
         }
         return achievement;
       }).toList();
 
-      final updatedProgress = progress.copyWith(
+      final updatedProgress = UserProgress(
+        userId: progress.userId,
         unlockedAchievements: updatedUnlocked,
+        inProgressAchievements: progress.inProgressAchievements,
+        totalPoints: progress.totalPoints,
+        currentLevel: progress.currentLevel,
+        currentLevelProgress: progress.currentLevelProgress,
+        nextLevelRequirement: progress.nextLevelRequirement,
+        categoryProgress: progress.categoryProgress,
         lastUpdated: DateTime.now(),
       );
 

@@ -33,50 +33,42 @@ class _AchievementCardState extends State<AchievementCard>
   @override
   void initState() {
     super.initState();
-    
+
     _slideController = AnimationController(
       duration: widget.animationDuration,
       vsync: this,
     );
-    
+
     _shineController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.elasticOut,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
+        );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
+    );
 
-    _shineAnimation = Tween<double>(
-      begin: -1.0,
-      end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _shineController,
-      curve: Curves.easeInOut,
-    ));
+    _shineAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _shineController, curve: Curves.easeInOut),
+    );
 
     // Start animations with a slight delay
-    Future.delayed(Duration(milliseconds: (widget.achievement.hashCode % 500)), () {
-      if (mounted) {
-        _slideController.forward();
-        if (widget.isUnlocked) {
-          _shineController.repeat(period: const Duration(seconds: 3));
+    Future.delayed(
+      Duration(milliseconds: (widget.achievement.hashCode % 500)),
+      () {
+        if (mounted) {
+          _slideController.forward();
+          if (widget.isUnlocked) {
+            _shineController.repeat(period: const Duration(seconds: 3));
+          }
         }
-      }
-    });
+      },
+    );
   }
 
   @override
@@ -120,8 +112,8 @@ class _AchievementCardState extends State<AchievementCard>
                               Text(
                                 widget.achievement.title,
                                 style: TextStyle(
-                                  color: widget.isUnlocked 
-                                      ? Colors.white 
+                                  color: widget.isUnlocked
+                                      ? Colors.white
                                       : Colors.white.withValues(alpha: 0.7),
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -213,11 +205,7 @@ class _AchievementCardState extends State<AchievementCard>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            _getTierIcon(),
-            size: 12,
-            color: _getTierColor(),
-          ),
+          Icon(_getTierIcon(), size: 12, color: _getTierColor()),
           const SizedBox(width: 4),
           Text(
             'T${widget.achievement.tier}',
@@ -237,7 +225,9 @@ class _AchievementCardState extends State<AchievementCard>
 
     final progress = widget.achievement.currentProgress;
     final target = widget.achievement.targetValue;
-    final progressPercentage = target > 0 ? (progress / target).clamp(0.0, 1.0) : 0.0;
+    final progressPercentage = target > 0
+        ? (progress / target).clamp(0.0, 1.0)
+        : 0.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,8 +246,8 @@ class _AchievementCardState extends State<AchievementCard>
             Text(
               '$progress / $target',
               style: TextStyle(
-                color: widget.isUnlocked 
-                    ? widget.achievement.type.color 
+                color: widget.isUnlocked
+                    ? widget.achievement.type.color
                     : Colors.white60,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -288,7 +278,9 @@ class _AchievementCardState extends State<AchievementCard>
                         colors: widget.isUnlocked
                             ? [
                                 widget.achievement.type.color,
-                                widget.achievement.type.color.withValues(alpha: 0.7),
+                                widget.achievement.type.color.withValues(
+                                  alpha: 0.7,
+                                ),
                               ]
                             : [
                                 Colors.white60,
@@ -321,11 +313,7 @@ class _AchievementCardState extends State<AchievementCard>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.star,
-            size: 14,
-            color: Colors.amber,
-          ),
+          const Icon(Icons.star, size: 14, color: Colors.amber),
           const SizedBox(width: 6),
           Text(
             widget.achievement.reward!,
@@ -388,11 +376,7 @@ class _AchievementCardState extends State<AchievementCard>
             ),
           ],
         ),
-        child: const Icon(
-          Icons.check,
-          size: 12,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.check, size: 12, color: Colors.white),
       ),
     );
   }
@@ -502,24 +486,21 @@ class _LevelProgressCardState extends State<LevelProgressCard>
     );
 
     final progressPercentage = widget.progress.nextLevelRequirement > 0
-        ? widget.progress.currentLevelProgress / widget.progress.nextLevelRequirement
+        ? widget.progress.currentLevelProgress /
+              widget.progress.nextLevelRequirement
         : 0.0;
 
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: progressPercentage,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _progressAnimation = Tween<double>(begin: 0.0, end: progressPercentage)
+        .animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
 
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
@@ -622,10 +603,7 @@ class _LevelProgressCardState extends State<LevelProgressCard>
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [
-                              Colors.purple,
-                              Colors.deepPurple,
-                            ],
+                            colors: [Colors.purple, Colors.deepPurple],
                           ),
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
