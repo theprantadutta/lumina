@@ -25,7 +25,7 @@ class LuminaApp extends ConsumerWidget {
     // Initialize auth state listener
     ref.watch(authStateListenerProvider);
 
-    final appState = ref.watch(appStateNotifierProvider);
+    final appState = ref.watch(appStateProvider);
 
     return MaterialApp(
       title: 'Lumina',

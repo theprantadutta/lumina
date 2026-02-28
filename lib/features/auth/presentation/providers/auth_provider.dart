@@ -1,31 +1,46 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+part 'auth_provider.g.dart';
+
 // Auth state provider
-final authStateProvider = StreamProvider<User?>((ref) {
+@Riverpod(keepAlive: true)
+Stream<User?> authState(Ref ref) {
   return FirebaseAuth.instance.authStateChanges();
-});
+}
 
 // Current user provider
-final currentUserProvider = Provider<User?>((ref) {
+@Riverpod(keepAlive: true)
+User? currentUser(Ref ref) {
   final authState = ref.watch(authStateProvider);
   return authState.when(
     data: (user) => user,
     loading: () => null,
     error: (error, stackTrace) => null,
   );
-});
+}
 
 // Auth loading provider
-final authLoadingProvider = StateProvider<bool>((ref) => false);
+@riverpod
+class AuthLoading extends _$AuthLoading {
+  @override
+  bool build() => false;
+  void set(bool value) => state = value;
+}
 
 // Auth error provider
-final authErrorProvider = StateProvider<String?>((ref) => null);
+@riverpod
+class AuthError extends _$AuthError {
+  @override
+  String? build() => null;
+  void set(String? value) => state = value;
+}
 
 // Auth service provider
-final authServiceProvider = Provider<AuthService>((ref) {
+@Riverpod(keepAlive: true)
+AuthService authService(Ref ref) {
   return AuthService();
-});
+}
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;

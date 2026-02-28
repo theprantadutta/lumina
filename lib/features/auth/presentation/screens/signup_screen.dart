@@ -359,7 +359,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
       // Update app state to logged in
       if (mounted) {
-        final appStateNotifier = ref.read(appStateNotifierProvider.notifier);
+        final appStateNotifier = ref.read(appStateProvider.notifier);
         await appStateNotifier.userLoggedIn();
       }
     } catch (e) {

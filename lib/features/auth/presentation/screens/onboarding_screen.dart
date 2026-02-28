@@ -118,7 +118,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     else
                       ElevatedButton(
                         onPressed: () async {
-                          final appStateNotifier = ref.read(appStateNotifierProvider.notifier);
+                          final appStateNotifier = ref.read(appStateProvider.notifier);
                           await appStateNotifier.completeOnboarding();
                         },
                         style: ElevatedButton.styleFrom(

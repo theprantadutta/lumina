@@ -1,117 +1,21 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:lumina/features/auth/presentation/providers/auth_provider.dart';
 import 'package:lumina/features/mood/data/services/mood_service.dart';
 import 'package:lumina/shared/models/mood_entry.dart';
 
+part 'mood_providers.g.dart';
+
 // Mood service provider
-final moodServiceProvider = Provider<MoodService>((ref) {
+@Riverpod(keepAlive: true)
+MoodService moodService(Ref ref) {
   return MoodService();
-});
+}
 
 // Current mood entry state provider (for the entry form)
-final currentMoodEntryProvider =
-    StateNotifierProvider<CurrentMoodEntryNotifier, MoodEntryState>((ref) {
-      return CurrentMoodEntryNotifier();
-    });
-
-// Mood entries provider
-final moodEntriesProvider = StreamProvider<List<MoodEntry>>((ref) {
-  final user = ref.watch(currentUserProvider);
-  final moodService = ref.watch(moodServiceProvider);
-
-  if (user == null) {
-    return Stream.value([]);
-  }
-
-  return moodService.getMoodEntriesStream(userId: user.uid, limit: 100);
-});
-
-// Recent mood entries provider (last 7 days)
-final recentMoodEntriesProvider = FutureProvider<List<MoodEntry>>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  final moodService = ref.watch(moodServiceProvider);
-
-  if (user == null) {
-    return [];
-  }
-
-  final now = DateTime.now();
-  final sevenDaysAgo = now.subtract(const Duration(days: 7));
-
-  return moodService.getMoodEntries(
-    userId: user.uid,
-    startDate: sevenDaysAgo,
-    endDate: now,
-  );
-});
-
-// Mood entries for specific date provider
-final moodEntriesForDateProvider =
-    FutureProvider.family<List<MoodEntry>, DateTime>((ref, date) async {
-      final user = ref.watch(currentUserProvider);
-      final moodService = ref.watch(moodServiceProvider);
-
-      if (user == null) {
-        return [];
-      }
-
-      return moodService.getMoodEntriesForDate(userId: user.uid, date: date);
-    });
-
-// Mood statistics provider
-final moodStatisticsProvider = FutureProvider<MoodStatistics>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  final moodService = ref.watch(moodServiceProvider);
-
-  if (user == null) {
-    return const MoodStatistics(
-      totalEntries: 0,
-      averageMood: 0.0,
-      mostCommonMood: null,
-      averageIntensity: 0.0,
-    );
-  }
-
-  final now = DateTime.now();
-  final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-
-  return moodService.getMoodStatistics(
-    userId: user.uid,
-    startDate: thirtyDaysAgo,
-    endDate: now,
-  );
-});
-
-// Mood trends provider
-final moodTrendsProvider =
-    FutureProvider.family<List<MoodTrendPoint>, MoodTrendsParams>((
-      ref,
-      params,
-    ) async {
-      final user = ref.watch(currentUserProvider);
-      final moodService = ref.watch(moodServiceProvider);
-
-      if (user == null) {
-        return [];
-      }
-
-      return moodService.getMoodTrends(
-        userId: user.uid,
-        startDate: params.startDate,
-        endDate: params.endDate,
-        period: params.period,
-      );
-    });
-
-// Mood entry actions provider
-final moodEntryActionsProvider = Provider<MoodEntryActions>((ref) {
-  final moodService = ref.watch(moodServiceProvider);
-  return MoodEntryActions(moodService);
-});
-
-// State notifier for current mood entry
-class CurrentMoodEntryNotifier extends StateNotifier<MoodEntryState> {
-  CurrentMoodEntryNotifier() : super(const MoodEntryState());
+@riverpod
+class CurrentMoodEntry extends _$CurrentMoodEntry {
+  @override
+  MoodEntryState build() => const MoodEntryState();
 
   void updateMood(MoodType mood) {
     state = state.copyWith(selectedMood: mood, intensity: mood.baseIntensity);
@@ -154,6 +58,102 @@ class CurrentMoodEntryNotifier extends StateNotifier<MoodEntryState> {
   void setError(String? error) {
     state = state.copyWith(error: error);
   }
+}
+
+// Mood entries provider
+@riverpod
+Stream<List<MoodEntry>> moodEntries(Ref ref) {
+  final user = ref.watch(currentUserProvider);
+  final moodService = ref.watch(moodServiceProvider);
+
+  if (user == null) {
+    return Stream.value([]);
+  }
+
+  return moodService.getMoodEntriesStream(userId: user.uid, limit: 100);
+}
+
+// Recent mood entries provider (last 7 days)
+@riverpod
+Future<List<MoodEntry>> recentMoodEntries(Ref ref) async {
+  final user = ref.watch(currentUserProvider);
+  final moodService = ref.watch(moodServiceProvider);
+
+  if (user == null) {
+    return [];
+  }
+
+  final now = DateTime.now();
+  final sevenDaysAgo = now.subtract(const Duration(days: 7));
+
+  return moodService.getMoodEntries(
+    userId: user.uid,
+    startDate: sevenDaysAgo,
+    endDate: now,
+  );
+}
+
+// Mood entries for specific date provider
+@riverpod
+Future<List<MoodEntry>> moodEntriesForDate(Ref ref, DateTime date) async {
+  final user = ref.watch(currentUserProvider);
+  final moodService = ref.watch(moodServiceProvider);
+
+  if (user == null) {
+    return [];
+  }
+
+  return moodService.getMoodEntriesForDate(userId: user.uid, date: date);
+}
+
+// Mood statistics provider
+@riverpod
+Future<MoodStatistics> moodStatistics(Ref ref) async {
+  final user = ref.watch(currentUserProvider);
+  final moodService = ref.watch(moodServiceProvider);
+
+  if (user == null) {
+    return const MoodStatistics(
+      totalEntries: 0,
+      averageMood: 0.0,
+      mostCommonMood: null,
+      averageIntensity: 0.0,
+    );
+  }
+
+  final now = DateTime.now();
+  final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+  return moodService.getMoodStatistics(
+    userId: user.uid,
+    startDate: thirtyDaysAgo,
+    endDate: now,
+  );
+}
+
+// Mood trends provider
+@riverpod
+Future<List<MoodTrendPoint>> moodTrends(Ref ref, MoodTrendsParams params) async {
+  final user = ref.watch(currentUserProvider);
+  final moodService = ref.watch(moodServiceProvider);
+
+  if (user == null) {
+    return [];
+  }
+
+  return moodService.getMoodTrends(
+    userId: user.uid,
+    startDate: params.startDate,
+    endDate: params.endDate,
+    period: params.period,
+  );
+}
+
+// Mood entry actions provider
+@Riverpod(keepAlive: true)
+MoodEntryActions moodEntryActions(Ref ref) {
+  final moodService = ref.watch(moodServiceProvider);
+  return MoodEntryActions(moodService);
 }
 
 // Mood entry state

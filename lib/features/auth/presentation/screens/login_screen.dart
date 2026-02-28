@@ -255,7 +255,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       // The auth state listener will automatically update the app state
       if (mounted) {
-        final appStateNotifier = ref.read(appStateNotifierProvider.notifier);
+        final appStateNotifier = ref.read(appStateProvider.notifier);
         await appStateNotifier.userLoggedIn();
       }
     } catch (e) {

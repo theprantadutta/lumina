@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'storage_service.g.dart';
 
 // Storage keys
 class StorageKeys {
@@ -9,24 +11,26 @@ class StorageKeys {
 }
 
 // Storage service provider
-final storageServiceProvider = Provider<StorageService>((ref) {
+@Riverpod(keepAlive: true)
+StorageService storageService(Ref ref) {
   return StorageService();
-});
+}
 
 // Onboarding state provider
-final onboardingStateProvider = FutureProvider<bool>((ref) async {
+@riverpod
+Future<bool> onboardingState(Ref ref) async {
   final storageService = ref.watch(storageServiceProvider);
   return await storageService.isOnboardingCompleted();
-});
+}
 
 class StorageService {
   static SharedPreferences? _prefs;
-  
+
   // Initialize SharedPreferences
   static Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
   }
-  
+
   SharedPreferences get _preferences {
     if (_prefs == null) {
       throw Exception('StorageService not initialized. Call StorageService.init() first.');
@@ -55,7 +59,7 @@ class StorageService {
   // Login tracking
   Future<void> setLastLoginDate() async {
     await _preferences.setString(
-      StorageKeys.lastLoginDate, 
+      StorageKeys.lastLoginDate,
       DateTime.now().toIso8601String(),
     );
   }

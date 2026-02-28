@@ -1,6 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumina/core/services/storage_service.dart';
+
+part 'app_state_notifier.g.dart';
 
 enum AppState {
   loading,
@@ -10,13 +12,17 @@ enum AppState {
   dashboard,
 }
 
-class AppStateNotifier extends StateNotifier<AppState> {
-  AppStateNotifier(this._storageService) : super(AppState.loading) {
+@Riverpod(keepAlive: true)
+class AppStateNotifier extends _$AppStateNotifier {
+  late StorageService _storageService;
+
+  @override
+  AppState build() {
+    _storageService = ref.watch(storageServiceProvider);
     _initialize();
+    return AppState.loading;
   }
 
-  final StorageService _storageService;
-  
   Future<void> _initialize() async {
     try {
       await _checkAppState();
@@ -29,7 +35,7 @@ class AppStateNotifier extends StateNotifier<AppState> {
     // Check if user is authenticated
     final user = FirebaseAuth.instance.currentUser;
     final isOnboardingCompleted = await _storageService.isOnboardingCompleted();
-    
+
     if (user != null) {
       // User is logged in
       await _storageService.setLastLoginDate();
@@ -67,19 +73,12 @@ class AppStateNotifier extends StateNotifier<AppState> {
   }
 }
 
-// Provider for the app state notifier
-final appStateNotifierProvider = StateNotifierProvider<AppStateNotifier, AppState>((ref) {
-  final storageService = ref.watch(storageServiceProvider);
-  return AppStateNotifier(storageService);
-});
-
 // Provider to listen to auth state changes
-final authStateListenerProvider = Provider<void>((ref) {
-  final appStateNotifier = ref.watch(appStateNotifierProvider.notifier);
-  
+@Riverpod(keepAlive: true)
+void authStateListener(Ref ref) {
+  final appStateNotifier = ref.watch(appStateProvider.notifier);
+
   FirebaseAuth.instance.authStateChanges().listen((user) {
     appStateNotifier.refreshState();
   });
-  
-  return;
-});
+}

@@ -10,11 +10,9 @@ class TestHelpers {
   /// Create a test widget with providers (placeholder)
   static Widget createTestWidget({
     required Widget child,
-    List<Override>? overrides,
     ThemeData? theme,
   }) {
     return ProviderScope(
-      overrides: overrides ?? [],
       child: MaterialApp(
         theme: theme ?? AppTheme.lightTheme,
         home: child,
