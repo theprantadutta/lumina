@@ -6,7 +6,10 @@
       "Bash(flutter packages pub run:*)",
       "WebFetch(domain:pub.dev)",
       "Bash(dart run build_runner:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:riverpod.dev)",
+      "WebSearch",
+      "WebFetch(domain:codewithandrea.com)"
     ],
     "deny": [],
     "ask": []
